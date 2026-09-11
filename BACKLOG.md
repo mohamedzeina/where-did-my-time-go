@@ -12,15 +12,15 @@ persistent history with charts of what you've done.
 
 ## Stack
 
-| Concern     | Choice                                    | Why                                                   |
-| ----------- | ----------------------------------------- | ----------------------------------------------------- |
-| UI          | React + TypeScript                        | Component model suits timer, history and chart views |
-| Build       | Vite                                      | Fast dev server, simple config                        |
-| Persistence | IndexedDB via Dexie                       | Local, survives reloads, no server or account needed |
-| Charts      | Recharts (revisit at step 8)              | Declarative React charts                              |
-| Dates       | date-fns                                  | Small, tree-shakeable date math                       |
-| Styling     | Plain CSS with design tokens              | Full control over a distinctive look                  |
-| Tests       | Vitest + Testing Library                  | Native to Vite                                        |
+| Concern     | Choice                       | Why                                                  |
+| ----------- | ---------------------------- | ---------------------------------------------------- |
+| UI          | React + TypeScript           | Component model suits timer, history and chart views |
+| Build       | Vite                         | Fast dev server, simple config                       |
+| Persistence | IndexedDB via Dexie          | Local, survives reloads, no server or account needed |
+| Charts      | Recharts (revisit at step 8) | Declarative React charts                             |
+| Dates       | date-fns                     | Small, tree-shakeable date math                      |
+| Styling     | Plain CSS with design tokens | Full control over a distinctive look                 |
+| Tests       | Vitest + Testing Library     | Native to Vite                                       |
 
 ## Data model
 
@@ -32,51 +32,51 @@ Only one session runs at a time. Starting another activity stops the current one
 
 ## Steps
 
-- [ ] **1. Project scaffold**
-  Vite + React + TS, ESLint/Prettier, Vitest, folder structure, `.gitignore`, README run instructions.
-  _Done when:_ `npm run dev` shows a placeholder page and `npm test` passes.
+- [x] **1. Project scaffold**
+      Vite + React + TS, oxlint/Prettier, Vitest, folder structure, `.gitignore`, README run instructions.
+      _Done when:_ `npm run dev` shows a placeholder page and `npm test` passes.
 
 - [ ] **2. Design direction & app shell**
-  Pick the visual identity (type, color, tone), set up design tokens, light/dark theme, and
-  navigation between Timer / History / Insights (empty views).
-  _Done when:_ you can move between the three views and the look feels like "the app".
+      Pick the visual identity (type, color, tone), set up design tokens, light/dark theme, and
+      navigation between Timer / History / Insights (empty views).
+      _Done when:_ you can move between the three views and the look feels like "the app".
 
 - [ ] **3. Data layer**
-  Dexie database, Activity + Session tables, typed repository functions, unit tests for them.
-  _Done when:_ tests cover create/read/update/delete and "start stops the running session".
+      Dexie database, Activity + Session tables, typed repository functions, unit tests for them.
+      _Done when:_ tests cover create/read/update/delete and "start stops the running session".
 
 - [ ] **4. Activities**
-  Create, rename, recolor and archive activities. Seed a few defaults on first run.
-  _Done when:_ activities persist across reloads.
+      Create, rename, recolor and archive activities. Seed a few defaults on first run.
+      _Done when:_ activities persist across reloads.
 
 - [ ] **5. Timer**
-  Pick an activity, start/stop, big live elapsed display, running state restored after reload,
-  running time shown in the browser tab title.
-  _Done when:_ you can time something, close the tab, reopen it, and it's still counting.
+      Pick an activity, start/stop, big live elapsed display, running state restored after reload,
+      running time shown in the browser tab title.
+      _Done when:_ you can time something, close the tab, reopen it, and it's still counting.
 
 - [ ] **6. Today**
-  Under the timer: today's sessions and a per-activity total for the day.
-  _Done when:_ stopping a timer immediately shows up in today's list.
+      Under the timer: today's sessions and a per-activity total for the day.
+      _Done when:_ stopping a timer immediately shows up in today's list.
 
 - [ ] **7. History**
-  Sessions grouped by day, filter by activity and date range, edit/delete a session, add a
-  manual entry for time you forgot to track.
-  _Done when:_ you can fix a mistaken session and see the change everywhere.
+      Sessions grouped by day, filter by activity and date range, edit/delete a session, add a
+      manual entry for time you forgot to track.
+      _Done when:_ you can fix a mistaken session and see the change everywhere.
 
 - [ ] **8. Insights (charts)**
-  Time per activity for a chosen range, daily totals stacked by activity over the last 7/30 days,
-  and a calendar heatmap of tracked time.
-  _Done when:_ charts reflect real history and update after edits.
+      Time per activity for a chosen range, daily totals stacked by activity over the last 7/30 days,
+      and a calendar heatmap of tracked time.
+      _Done when:_ charts reflect real history and update after edits.
 
 - [ ] **9. Backup & export**
-  Export/import all data as JSON, export sessions as CSV. Browser storage can be cleared, so this
-  is your safety net.
-  _Done when:_ exporting, clearing data, and importing restores everything.
+      Export/import all data as JSON, export sessions as CSV. Browser storage can be cleared, so this
+      is your safety net.
+      _Done when:_ exporting, clearing data, and importing restores everything.
 
 - [ ] **10. Polish**
-  Keyboard shortcuts (space to start/stop), empty states, mobile layout, installable PWA with
-  offline support.
-  _Done when:_ it installs as an app and works offline.
+      Keyboard shortcuts (space to start/stop), empty states, mobile layout, installable PWA with
+      offline support.
+      _Done when:_ it installs as an app and works offline.
 
 ## Later / ideas
 
@@ -90,3 +90,5 @@ Only one session runs at a time. Starting another activity stops the current one
 ## Done log
 
 <!-- One line per completed step: date, step, notes. -->
+
+- 2026-09-11 — Step 1, project scaffold. Vite template now ships oxlint instead of ESLint, kept it.

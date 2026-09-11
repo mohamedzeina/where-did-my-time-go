@@ -1,0 +1,26 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #0e0e10;
+  color: #f2f0ea;
+}
+
+.placeholder {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  padding-inline: 1rem;
+  text-align: center;
+}
