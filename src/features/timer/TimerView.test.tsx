@@ -15,8 +15,9 @@ let reading: Activity
 beforeEach(async () => {
   window.location.hash = ''
   await Promise.all(db.tables.map((table) => table.clear()))
-  gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
-  reading = await createActivity({ name: 'Reading', color: ACTIVITY_COLORS[1].hex })
+  // Distinct creation times keep "first activity" stable (Gym), even within one millisecond.
+  gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex }, 1)
+  reading = await createActivity({ name: 'Reading', color: ACTIVITY_COLORS[1].hex }, 2)
 })
 
 describe('TimerView', () => {
@@ -80,6 +81,37 @@ describe('TimerView', () => {
       await screen.findByText(/^01:0[56]$/, { selector: '.clock .visually-hidden' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Reading', { selector: 'strong' })).toBeInTheDocument()
+  })
+})
+
+describe('Space shortcut', () => {
+  it('starts the last activity and stops it again', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    // The hint names the activity once the database has answered, so wait for the final text.
+    await waitFor(() =>
+      expect(document.querySelector('.view-lede')).toHaveTextContent('Or press Space for Gym.'),
+    )
+
+    await user.keyboard(' ')
+    expect(await screen.findByRole('button', { name: 'Stop Gym' })).toBeInTheDocument()
+
+    // Focus is on the body again (not the tile), so Space goes to the timer.
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    await user.keyboard(' ')
+    expect(await screen.findByText('idle')).toBeInTheDocument()
+    expect(await getRunningSession()).toBeUndefined()
+  })
+
+  it('leaves Space alone while typing', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(await screen.findByRole('button', { name: /new activity/i }))
+    await user.keyboard('Board games')
+
+    expect(screen.getByRole('textbox', { name: 'New activity name' })).toHaveValue('Board games')
+    expect(await getRunningSession()).toBeUndefined()
   })
 })
 

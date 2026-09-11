@@ -8,7 +8,8 @@ import './today.css'
 
 /** Today at a glance: tracked vs. elapsed, time per activity, and the sessions themselves. */
 export function TodayPanel() {
-  const today = useToday()
+  // Once a second, so a timer that just started shows up in the totals straight away.
+  const today = useToday(1000)
   if (!today) return null
 
   const { from, to, now, sessions, activities } = today

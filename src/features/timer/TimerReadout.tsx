@@ -1,13 +1,16 @@
+import { useLiveQuery } from 'dexie-react-hooks'
 import type { CSSProperties } from 'react'
 import { Clock } from '../../components/Clock'
 import { stopSession } from '../../db/sessions'
 import { formatClock } from '../../lib/day'
 import { formatDuration } from '../../lib/duration'
+import { resumeTarget } from './toggleTimer'
 import { useElapsed, type RunningTimer } from './useRunningTimer'
 
 /** The big LED clock, its status line, and the Stop button while something is running. */
 export function TimerReadout({ running }: { running: RunningTimer | null }) {
   const elapsed = useElapsed(running?.session.start)
+  const next = useLiveQuery(resumeTarget, [])
 
   if (!running) {
     return (
@@ -21,7 +24,15 @@ export function TimerReadout({ running }: { running: RunningTimer | null }) {
             <Clock value={formatDuration(0)} idle />
           </div>
         </div>
-        <p className="view-lede">No timer running. Pick an activity to start one.</p>
+        <p className="view-lede">
+          No timer running. Pick an activity to start one.
+          {next && (
+            <span className="key-hint">
+              {' '}
+              Or press <kbd className="key">Space</kbd> for {next.name}.
+            </span>
+          )}
+        </p>
       </div>
     )
   }
@@ -43,9 +54,17 @@ export function TimerReadout({ running }: { running: RunningTimer | null }) {
           Tracking <strong className="timer-activity">{activity.name}</strong> since{' '}
           {formatClock(new Date(session.start))}.
         </p>
-        <button type="button" className="stop-button" onClick={() => void stopSession()}>
+        <button
+          type="button"
+          className="stop-button"
+          aria-keyshortcuts="Space"
+          onClick={() => void stopSession()}
+        >
           <span className="stop-icon" aria-hidden="true" />
           Stop
+          <kbd className="key key-hint" aria-hidden="true">
+            Space
+          </kbd>
         </button>
       </div>
     </div>

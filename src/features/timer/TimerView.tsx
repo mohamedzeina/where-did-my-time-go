@@ -10,7 +10,7 @@ export function TimerView() {
 
   return (
     <section className="view view-timer" aria-labelledby="view-title">
-      <h1 id="view-title" className="visually-hidden">
+      <h1 id="view-title" tabIndex={-1} className="visually-hidden">
         Timer
       </h1>
       {running !== undefined && <TimerReadout running={running} />}

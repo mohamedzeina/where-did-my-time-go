@@ -45,7 +45,7 @@ export function HistoryView() {
   return (
     <section className="view view-history" aria-labelledby="view-title">
       <div className="history-head">
-        <h1 id="view-title" className="view-title">
+        <h1 id="view-title" tabIndex={-1} className="view-title">
           History
         </h1>
         <button

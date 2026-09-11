@@ -126,7 +126,7 @@ export function DataView() {
 
   return (
     <section className="view view-data" aria-labelledby="view-title">
-      <h1 id="view-title" className="view-title">
+      <h1 id="view-title" tabIndex={-1} className="view-title">
         Data
       </h1>
       <p className="view-lede">

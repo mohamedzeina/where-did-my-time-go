@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import { useEffect, useRef, type ComponentType } from 'react'
 import { DayRibbon } from './app/DayRibbon'
 import { DocumentTitle } from './app/DocumentTitle'
 import { StatusBar } from './app/StatusBar'
@@ -7,6 +7,7 @@ import { DataView } from './features/data/DataView'
 import { HistoryView } from './features/history/HistoryView'
 import { InsightsView } from './features/insights/InsightsView'
 import { TimerView } from './features/timer/TimerView'
+import { useTimerShortcut } from './features/timer/useTimerShortcut'
 import './App.css'
 
 const NAV: { route: Route; label: string; view: ComponentType }[] = [
@@ -22,6 +23,20 @@ function App() {
   const View = current.view
 
   useRouteShortcuts()
+  useTimerShortcut()
+
+  // After switching views, start at the top and move focus to the new view's heading, so
+  // keyboard and screen reader users land where the page changed.
+  const main = useRef<HTMLElement>(null)
+  const firstRoute = useRef(true)
+  useEffect(() => {
+    if (firstRoute.current) {
+      firstRoute.current = false
+      return
+    }
+    if (main.current) main.current.scrollTop = 0
+    document.getElementById('view-title')?.focus()
+  }, [route])
 
   return (
     <div className="shell">
@@ -55,7 +70,7 @@ function App() {
       </nav>
 
       <div className="shell-stage">
-        <main className="shell-main">
+        <main className="shell-main" ref={main}>
           <View />
         </main>
         <StatusBar />

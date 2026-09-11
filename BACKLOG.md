@@ -93,7 +93,7 @@ Only one session runs at a time. Starting another activity stops the current one
       is your safety net.
       _Done when:_ exporting, clearing data, and importing restores everything.
 
-- [ ] **10. Polish**
+- [x] **10. Polish**
       Keyboard shortcuts (space to start/stop), empty states, mobile layout, installable PWA with
       offline support.
       _Done when:_ it installs as an app and works offline.
@@ -138,3 +138,7 @@ Only one session runs at a time. Starting another activity stops the current one
 - 2026-09-11 — Step 9, backup & export. New Data view (key 4): JSON backup with last-backup
   date, validated restore that previews and replaces all at once, CSV export (formula-safe,
   Excel-friendly), persistent-storage request, and delete-everything behind a confirmation.
+- 2026-09-11 — Step 10, polish. Space toggles the timer (resumes the last active activity);
+  PWA via vite-plugin-pwa with a ribbon icon, verified installable with no errors and working
+  offline from the production build. Focus moves to the view heading on navigation, Today
+  totals refresh every second, dark thin scrollbars, README rewritten.

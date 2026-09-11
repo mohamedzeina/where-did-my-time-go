@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full-bleed so the same art works as a maskable icon; the mark stays inside the safe zone. -->
+  <rect width="512" height="512" fill="#12163a"/>
+  <!-- The day ribbon: a track with the hours already gone hatched in, and two tracked bands. -->
+  <rect x="186" y="112" width="140" height="288" rx="14" fill="#1f2452"/>
+  <clipPath id="spent"><rect x="186" y="112" width="140" height="170" rx="14"/></clipPath>
+  <g clip-path="url(#spent)" stroke="#8c92b8" stroke-opacity=".28" stroke-width="7">
+    <path d="M150 150 L250 50 M150 190 L290 50 M150 230 L330 50 M150 270 L360 60 M150 310 L360 100 M170 330 L360 140 M210 330 L360 180 M250 330 L360 220 M290 330 L360 260"/>
+  </g>
+  <rect x="236" y="138" width="72" height="54" rx="7" fill="#3987e5"/>
+  <rect x="236" y="204" width="72" height="30" rx="7" fill="#d95926"/>
+  <!-- Now. -->
+  <rect x="150" y="272" width="212" height="18" rx="9" fill="#ffb23e"/>
+</svg>

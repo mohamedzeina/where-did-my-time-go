@@ -58,6 +58,34 @@
   color: var(--text);
 }
 
+/* A keycap, e.g. Space. Hidden on touch screens, where there's no keyboard to press. */
+.key {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid var(--text-faint);
+  border-block-end-width: 2px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  line-height: 1.5;
+  vertical-align: 0.15em;
+  color: var(--text);
+}
+
+.stop-button .key {
+  margin-inline-start: var(--space-2);
+  border-color: currentColor;
+  color: inherit;
+  opacity: 0.6;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .key-hint {
+    display: none;
+  }
+}
+
 .stop-icon {
   inline-size: 0.7em;
   block-size: 0.7em;

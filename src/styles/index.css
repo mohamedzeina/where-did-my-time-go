@@ -15,6 +15,12 @@ body,
   height: 100%;
 }
 
+/* Thin, dark scrollbars that sit quietly in the night palette. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-faint) transparent;
+}
+
 body {
   margin: 0;
   font-family: var(--font-ui);
@@ -39,6 +45,11 @@ a {
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 3px;
+}
+
+/* View headings take focus after navigation only to set the reading position. */
+h1[tabindex='-1']:focus {
+  outline: none;
 }
 
 /* Small mono action, e.g. "Edit" or "Archive". `.is-primary` for the main action of a form. */

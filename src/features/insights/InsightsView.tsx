@@ -49,7 +49,7 @@ export function InsightsView() {
 
   return (
     <section className="view view-insights" aria-labelledby="view-title">
-      <h1 id="view-title" className="view-title">
+      <h1 id="view-title" tabIndex={-1} className="view-title">
         Insights
       </h1>
 
