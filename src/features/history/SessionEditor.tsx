@@ -26,8 +26,8 @@ function defaultTimes() {
 }
 
 /**
- * Add or edit a session: activity, date, start and end times, and a note. An end time at or
- * before the start is read as the next day. A running session has no end to edit.
+ * Add or edit a session: activity, date, start and end times (to the second), and a note.
+ * An end time before the start is read as the next day. A running session has no end to edit.
  */
 export function SessionEditor({ session, activities, onDone }: SessionEditorProps) {
   const id = useId()
@@ -124,6 +124,7 @@ export function SessionEditor({ session, activities, onDone }: SessionEditorProp
           <input
             className="input"
             type="time"
+            step={1}
             value={startTime}
             required
             onChange={(event) => setStartTime(event.target.value)}
@@ -142,6 +143,7 @@ export function SessionEditor({ session, activities, onDone }: SessionEditorProp
             <input
               className="input"
               type="time"
+              step={1}
               value={endTime}
               required
               onChange={(event) => setEndTime(event.target.value)}

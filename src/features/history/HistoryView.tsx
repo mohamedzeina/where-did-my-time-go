@@ -60,7 +60,7 @@ export function HistoryView() {
         </button>
       </div>
 
-      <div className="history-filters">
+      <div className="filters">
         <label className="field">
           <span className="field-label">Range</span>
           <select

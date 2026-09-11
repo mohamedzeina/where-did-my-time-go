@@ -9,8 +9,13 @@ export function startOfDay(t: number): number {
 
 /** Local midnight at the end of the day containing `t`. Handles 23- and 25-hour DST days. */
 export function endOfDay(t: number): number {
-  const d = new Date(startOfDay(t))
-  d.setDate(d.getDate() + 1)
+  return addDays(startOfDay(t), 1)
+}
+
+/** Shifts a local time by whole calendar days, staying on the same wall-clock time across DST. */
+export function addDays(t: number, days: number): number {
+  const d = new Date(t)
+  d.setDate(d.getDate() + days)
   return d.getTime()
 }
 
@@ -50,9 +55,13 @@ export function totalsByActivity(
   return [...totals].map(([activityId, ms]) => ({ activityId, ms })).sort((a, b) => b.ms - a.ms)
 }
 
-/** A total as hours and minutes, e.g. `2h 05m`, `45m`, or `<1m` for a few seconds. */
+/**
+ * A total as hours and minutes, e.g. `2h 05m` or `45m`. Under a minute it counts seconds
+ * (`48s`), so short sessions of different lengths never share one label.
+ */
 export function formatHoursMinutes(ms: number): string {
-  if (ms > 0 && ms < 60_000) return '<1m'
+  if (ms > 0 && ms < 1_000) return '<1s'
+  if (ms > 0 && ms < 60_000) return `${Math.floor(ms / 1_000)}s`
   const minutes = Math.floor(Math.max(0, ms) / 60_000)
   const h = Math.floor(minutes / 60)
   const m = minutes % 60

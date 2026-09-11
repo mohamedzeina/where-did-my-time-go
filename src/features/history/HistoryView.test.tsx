@@ -139,6 +139,42 @@ describe('HistoryView', () => {
     expect(await allSessions()).toEqual([])
   })
 
+  it('keeps the seconds of a short session through an edit', async () => {
+    const yesterday = startOfDay(today - 12 * 60 * MIN)
+    const start = yesterday + 17 * 60 * MIN + 12_000
+    const session = await addSession({ activityId: gym.id, start, end: start + 47_000 })
+    const user = userEvent.setup()
+    render(<HistoryView />)
+
+    await user.click(await screen.findByRole('button', { name: /^Edit Gym/ }))
+    const form = screen.getByRole('form', { name: 'Edit session' })
+    expect(within(form).getByLabelText('Start')).toHaveValue('17:00:12')
+    expect(within(form).getByLabelText(/^End/)).toHaveValue('17:00:59')
+    expect(within(form).queryByText('next day')).not.toBeInTheDocument()
+    await user.type(within(form).getByRole('textbox', { name: 'Note' }), 'Quick set')
+    await user.click(within(form).getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(async () =>
+      expect(await allSessions()).toEqual([{ ...session, note: 'Quick set' }]),
+    )
+  })
+
+  it('refuses an end equal to the start instead of making it a day long', async () => {
+    const yesterday = startOfDay(today - 12 * 60 * MIN)
+    await addSession({ activityId: gym.id, start: yesterday + 60 * MIN, end: yesterday + 61 * MIN })
+    const user = userEvent.setup()
+    render(<HistoryView />)
+
+    await user.click(await screen.findByRole('button', { name: /^Edit Gym/ }))
+    const form = screen.getByRole('form', { name: 'Edit session' })
+    const end = within(form).getByLabelText(/^End/)
+    await user.clear(end)
+    await user.type(end, '01:00:00')
+    await user.click(within(form).getByRole('button', { name: 'Save changes' }))
+
+    expect(await within(form).findByRole('alert')).toHaveTextContent('must end after it starts')
+  })
+
   it('deletes a session after confirming', async () => {
     await addSession({ activityId: gym.id, start: today, end: today + MIN })
     const user = userEvent.setup()

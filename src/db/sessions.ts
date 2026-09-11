@@ -127,6 +127,11 @@ export async function listSessions({ from, to, activityId }: SessionQuery): Prom
   return rows.map(toSession)
 }
 
+/** When the earliest session started, or `undefined` if nothing has been tracked yet. */
+export async function firstSessionStart(): Promise<number | undefined> {
+  return (await db.sessions.orderBy('start').first())?.start
+}
+
 /** How many sessions, running or finished, belong to an activity. */
 export async function countSessions(activityId: string): Promise<number> {
   return db.sessions.where('activityId').equals(activityId).count()

@@ -17,7 +17,7 @@ persistent history with charts of what you've done.
 | UI          | React + TypeScript           | Component model suits timer, history and chart views |
 | Build       | Vite                         | Fast dev server, simple config                       |
 | Persistence | IndexedDB via Dexie          | Local, survives reloads, no server or account needed |
-| Charts      | Recharts (revisit at step 8) | Declarative React charts                             |
+| Charts      | Hand-built HTML/CSS          | Exact mark specs, tooltips and table views; no dep   |
 | Dates       | date-fns                     | Small, tree-shakeable date math                      |
 | Styling     | Plain CSS with design tokens | Full control over a distinctive look                 |
 | Tests       | Vitest + Testing Library     | Native to Vite                                       |
@@ -83,7 +83,7 @@ Only one session runs at a time. Starting another activity stops the current one
       manual entry for time you forgot to track.
       _Done when:_ you can fix a mistaken session and see the change everywhere.
 
-- [ ] **8. Insights (charts)**
+- [x] **8. Insights (charts)**
       Time per activity for a chosen range, daily totals stacked by activity over the last 7/30 days,
       and a calendar heatmap of tracked time.
       _Done when:_ charts reflect real history and update after edits.
@@ -130,3 +130,8 @@ Only one session runs at a time. Starting another activity stops the current one
   add/edit/delete; an end before the start means the next day; no sessions ending in the
   future. Small elapsed readouts now always show hours (`0:22:05`) so they can't pass for
   clock times.
+- 2026-09-11 — Step 8, insights. Hand-built charts instead of Recharts: 26-week heatmap on a
+  neutral moonlight ramp (above the range filter, which it ignores), stat tiles, per-activity
+  bars, and stacked day/week columns with keyboard tooltips and table views; >8 activities
+  fold into "Other". Fixes from review: durations under a minute show seconds, and the
+  session editor keeps seconds (an equal end no longer becomes a 24-hour session).

@@ -10,13 +10,6 @@
   gap: var(--space-4);
 }
 
-.history-filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-3) var(--space-4);
-}
-
 .history-summary {
   margin-inline-start: auto;
   padding-block-end: var(--space-2);

@@ -61,7 +61,10 @@ describe('totalsByActivity', () => {
 describe('formatHoursMinutes', () => {
   it('formats hours and minutes', () => {
     expect(formatHoursMinutes(0)).toBe('0m')
-    expect(formatHoursMinutes(30_000)).toBe('<1m')
+    expect(formatHoursMinutes(400)).toBe('<1s')
+    expect(formatHoursMinutes(7_900)).toBe('7s')
+    expect(formatHoursMinutes(48_000)).toBe('48s')
+    expect(formatHoursMinutes(60_000)).toBe('1m')
     expect(formatHoursMinutes(45 * 60_000)).toBe('45m')
     expect(formatHoursMinutes(125 * 60_000 + 59_000)).toBe('2h 05m')
   })

@@ -68,7 +68,21 @@ describe('TodayPanel', () => {
 
     await user.click(screen.getByRole('button', { name: 'Stop' }))
     expect(await within(log).findByText(/^\d\d:\d\d – \d\d:\d\d$/)).toBeInTheDocument()
-    expect(within(log).getByText('<1m')).toBeInTheDocument()
+    // A start-stop this quick lasts under a second, or a few at most.
+    expect(within(log).getByText(/^(<1s|\ds)$/)).toBeInTheDocument()
+  })
+
+  it('tells short sessions apart by their seconds', async () => {
+    await addSession({ activityId: gym.id, start: midnight, end: midnight + 48_000 })
+    await addSession({ activityId: reading.id, start: midnight + MIN, end: midnight + MIN + 7_000 })
+    render(<TodayPanel />)
+
+    const totals = within(await screen.findByRole('list', { name: 'Time per activity today' }))
+    expect(totals.getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'Gym48s',
+      'Reading7s',
+    ])
+    expect(screen.getByText('55s')).toBeInTheDocument()
   })
 
   it('counts a running timer in the totals', async () => {

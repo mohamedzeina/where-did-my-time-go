@@ -1,5 +1,5 @@
 import type { Session } from '../db/types'
-import { endOfDay, startOfDay } from './totals'
+import { addDays, endOfDay, startOfDay } from './totals'
 
 export const RANGE_PRESETS = [
   { id: 'week', label: 'Last 7 days' },
@@ -16,13 +16,6 @@ export interface DateRange {
   from: number
   /** Local midnight after the last day, epoch ms (exclusive). */
   to: number
-}
-
-/** Shifts a local date by whole days, staying on midnight across DST changes. */
-function addDays(t: number, days: number): number {
-  const d = new Date(t)
-  d.setDate(d.getDate() + days)
-  return d.getTime()
 }
 
 /** The days a preset covers, ending today. `custom` uses the given `YYYY-MM-DD` dates. */
@@ -81,10 +74,10 @@ export function toDateInput(t: number): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-/** Epoch ms to the `HH:MM` value of an `<input type="time">`, in local time. */
+/** Epoch ms to the `HH:MM:SS` value of an `<input type="time" step="1">`, in local time. */
 export function toTimeInput(t: number): string {
   const d = new Date(t)
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 }
 
 /** Local midnight of a `YYYY-MM-DD` date. */
@@ -93,16 +86,17 @@ export function fromDateInput(date: string): number {
   return new Date(y, m - 1, d).getTime()
 }
 
-/** A local date plus an `HH:MM` time, as epoch ms. */
+/** A local date plus an `HH:MM` or `HH:MM:SS` time, as epoch ms. */
 export function fromDateTimeInputs(date: string, time: string): number {
   const [y, m, d] = date.split('-').map(Number)
-  const [hh, mm] = time.split(':').map(Number)
-  return new Date(y, m - 1, d, hh, mm).getTime()
+  const [hh, mm, ss = 0] = time.split(':').map(Number)
+  return new Date(y, m - 1, d, hh, mm, ss).getTime()
 }
 
 /**
- * Start and end from a date and two clock times. An end at or before the start is read as
- * the next day, so 23:30 – 00:15 is a 45-minute session across midnight.
+ * Start and end from a date and two clock times. An end before the start is read as the
+ * next day, so 23:30 – 00:15 is a 45-minute session across midnight. An end equal to the
+ * start stays put (a zero-length session, which saving rejects).
  */
 export function sessionTimesFromInputs(
   date: string,
@@ -111,7 +105,7 @@ export function sessionTimesFromInputs(
 ): { start: number; end: number; crossesMidnight: boolean } {
   const start = fromDateTimeInputs(date, startTime)
   let end = fromDateTimeInputs(date, endTime)
-  const crossesMidnight = end <= start
+  const crossesMidnight = end < start
   if (crossesMidnight) {
     const next = new Date(end)
     next.setDate(next.getDate() + 1)

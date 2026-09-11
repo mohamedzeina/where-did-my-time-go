@@ -3,6 +3,7 @@ import type { Session } from '../db/types'
 import {
   formatDayLabel,
   fromDateInput,
+  fromDateTimeInputs,
   groupByDay,
   resolveRange,
   sessionTimesFromInputs,
@@ -68,11 +69,27 @@ describe('groupByDay', () => {
 })
 
 describe('input conversions', () => {
-  it('round-trips dates and times in local time', () => {
-    const t = at(3, 7, 5)
+  it('round-trips dates and times to the second, in local time', () => {
+    const t = at(3, 7, 5) + 42_000
     expect(toDateInput(t)).toBe('2026-09-03')
-    expect(toTimeInput(t)).toBe('07:05')
+    expect(toTimeInput(t)).toBe('07:05:42')
     expect(fromDateInput('2026-09-03')).toBe(at(3))
+    expect(fromDateTimeInputs('2026-09-03', '07:05:42')).toBe(t)
+    expect(fromDateTimeInputs('2026-09-03', '07:05')).toBe(at(3, 7, 5))
+  })
+
+  it('keeps seconds so short sessions survive an edit', () => {
+    expect(sessionTimesFromInputs('2026-09-03', '17:07:12', '17:07:59')).toEqual({
+      start: at(3, 17, 7) + 12_000,
+      end: at(3, 17, 7) + 59_000,
+      crossesMidnight: false,
+    })
+  })
+
+  it('leaves an end equal to the start alone instead of adding a day', () => {
+    const { start, end, crossesMidnight } = sessionTimesFromInputs('2026-09-03', '17:07', '17:07')
+    expect(end).toBe(start)
+    expect(crossesMidnight).toBe(false)
   })
 
   it('reads an end before the start as the next day', () => {

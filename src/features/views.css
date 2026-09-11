@@ -12,6 +12,14 @@
   line-height: 0.95;
 }
 
+/* One row of filters, above everything they scope. */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+}
+
 /* A titled block inside a view: heading on the left, a small action or summary on the right. */
 .section-head {
   display: flex;
