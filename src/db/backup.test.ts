@@ -18,6 +18,7 @@ beforeEach(async () => {
 
 async function seed() {
   const gym = await createActivity({ name: 'Gym', color: '#111' }, 1)
+  await updateActivity(gym.id, { goal: { period: 'week', ms: 3 * 3_600_000 } })
   const old = await createActivity({ name: 'Old', color: '#222' }, 2)
   await addSession({ activityId: gym.id, start: 1000, end: 5000, note: 'Legs, "heavy"' })
   await addSession({ activityId: old.id, start: 6000, end: 7000 })
@@ -39,6 +40,7 @@ describe('backup round trip', () => {
 
     await restoreData(backup)
     expect(await listActivities({ includeArchived: true })).toEqual(before.activities)
+    expect(before.activities[0].goal).toEqual({ period: 'week', ms: 3 * 3_600_000 })
     expect(await listSessions({ from: 0, to: Infinity })).toEqual(before.sessions)
     expect((await getRunningSession())?.start).toBe(8000)
   })
@@ -77,6 +79,14 @@ describe('parseBackup', () => {
     ['something else entirely', [1, 2, 3], /isn't a where-did-my-time-go backup/],
     ['a newer version', { ...valid(), version: BACKUP_VERSION + 1 }, /newer version/],
     ['a damaged activity', { ...valid(), activities: [{ id: 'a' }] }, /Activity 1 .* damaged/],
+    [
+      'an impossible goal',
+      {
+        ...valid(),
+        activities: [{ ...valid().activities[0], goal: { period: 'day', ms: 90_000_000 } }],
+      },
+      /goal on activity 1 .* damaged/,
+    ],
     [
       'a session that ends before it starts',
       { ...valid(), sessions: [{ id: 's', activityId: 'a', start: 20, end: 10, note: '' }] },

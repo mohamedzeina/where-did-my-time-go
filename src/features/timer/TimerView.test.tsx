@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../../App'
-import { createActivity } from '../../db/activities'
+import { createActivity, updateActivity } from '../../db/activities'
 import { db } from '../../db/db'
 import { getRunningSession, listSessions, startSession } from '../../db/sessions'
 import type { Activity } from '../../db/types'
@@ -107,6 +107,28 @@ describe('TimerView', () => {
       await screen.findByText(/^01:0[56]$/, { selector: '.clock .visually-hidden' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Reading', { selector: 'strong' })).toBeInTheDocument()
+  })
+})
+
+describe('goals', () => {
+  it('says so when a goal is reached while the timer runs', async () => {
+    await updateActivity(gym.id, { goal: { period: 'day', ms: 60_000 } })
+    // A running session that crosses the 1-minute goal a fraction of a second from now.
+    await startSession(gym.id, Date.now() - 60_000 + 400)
+    render(<App />)
+
+    expect(
+      await screen.findByText('Gym: daily goal reached.', {}, { timeout: 2500 }),
+    ).toBeInTheDocument()
+  })
+
+  it('stays quiet about goals already met when the page opens', async () => {
+    await updateActivity(gym.id, { goal: { period: 'day', ms: 60_000 } })
+    await startSession(gym.id, Date.now() - 5 * 60_000)
+    render(<App />)
+
+    await screen.findByRole('button', { name: /^Stop Gym, goal met/ })
+    expect(screen.queryByText(/goal reached/)).not.toBeInTheDocument()
   })
 })
 

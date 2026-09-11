@@ -1,0 +1,81 @@
+import type { CSSProperties } from 'react'
+import type { Activity, Goal, Session } from '../../db/types'
+import { formatGoal, goalRecord } from '../../lib/goals'
+import { formatHoursMinutes } from '../../lib/totals'
+
+interface GoalsSectionProps {
+  activities: Map<string, Activity>
+  /** Sessions from the Monday before `from`, so weekly goals are judged on whole weeks. */
+  sessions: Session[]
+  from: number
+  to: number
+  now: number
+}
+
+/** Show a dot per day or week only while there are few enough to read. */
+const MAX_DOTS = 35
+
+const dayName = new Intl.DateTimeFormat(undefined, {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+})
+
+const hasGoal = (a: Activity): a is Activity & { goal: Goal } => a.goal !== undefined
+
+/**
+ * How each goal went in the range: met on how many days (or weeks), with a dot for each one
+ * (filled when met). Today and this week only count once they're met.
+ */
+export function GoalsSection({ activities, sessions, from, to, now }: GoalsSectionProps) {
+  const goals = [...activities.values()].filter((a) => hasGoal(a) && !a.archived) as (Activity & {
+    goal: Goal
+  })[]
+  if (goals.length === 0) return null
+
+  return (
+    <section className="insights-block" aria-labelledby="goals-title">
+      <div className="section-head">
+        <h2 id="goals-title" className="section-title">
+          Goals
+        </h2>
+      </div>
+      <ul className="goal-rows">
+        {goals.map((activity) => {
+          const record = goalRecord(activity, sessions, from, to, now)
+          const unit = activity.goal.period === 'day' ? 'day' : 'week'
+          return (
+            <li
+              key={activity.id}
+              className="goal-row"
+              style={{ '--bar-color': activity.color } as CSSProperties}
+            >
+              <span className="goal-name">
+                <span className="chart-swatch" style={{ background: activity.color }} />
+                {activity.name}
+              </span>
+              <span className="goal-target">{formatGoal(activity.goal)}</span>
+              <span className="goal-score">
+                met {record.metCount} of {record.countable} {unit}
+                {record.countable === 1 ? '' : 's'}
+              </span>
+              {record.periods.length <= MAX_DOTS && (
+                <span className="goal-dots" aria-hidden="true">
+                  {record.periods.map((p) => (
+                    <span
+                      key={p.start}
+                      className={
+                        p.met ? 'goal-dot is-met' : p.current ? 'goal-dot is-current' : 'goal-dot'
+                      }
+                      title={`${unit === 'week' ? 'Week of ' : ''}${dayName.format(p.start)}: ${formatHoursMinutes(p.done)}`}
+                    />
+                  ))}
+                </span>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}

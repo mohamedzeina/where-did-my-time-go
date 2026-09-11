@@ -11,8 +11,6 @@ beforeEach(async () => {
   await Promise.all(db.tables.map((table) => table.clear()))
 })
 
-const tiles = () => within(screen.getByRole('list', { name: '' })).queryAllByRole('listitem')
-
 describe('ActivitiesPanel', () => {
   it('lists active activities and hides archived ones', async () => {
     await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
@@ -118,9 +116,68 @@ describe('ActivitiesPanel', () => {
     expect(await getActivity(gym.id)).toBeDefined()
   })
 
+  it('sets a goal in edit mode and shows progress on the tile', async () => {
+    const gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
+    const midnight = new Date()
+    midnight.setHours(0, 0, 0, 0)
+    // One minute, right after midnight, so the test holds at any time of day.
+    await addSession({
+      activityId: gym.id,
+      start: midnight.getTime(),
+      end: midnight.getTime() + 60_000,
+    })
+    const user = userEvent.setup()
+    render(<ActivitiesPanel running={null} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.type(screen.getByRole('textbox', { name: 'Goal hours for Gym' }), '1,5{Enter}')
+    await waitFor(async () =>
+      expect((await getActivity(gym.id))?.goal).toEqual({ period: 'day', ms: 1.5 * 3_600_000 }),
+    )
+
+    const hours = screen.getByRole('textbox', { name: 'Goal hours for Gym' })
+    await user.clear(hours)
+    await user.type(hours, '2{Enter}')
+    const period = screen.getByRole('group', { name: 'Goal period for Gym' })
+    await user.click(within(period).getByRole('radio', { name: 'week' }))
+    await waitFor(async () =>
+      expect((await getActivity(gym.id))?.goal).toEqual({ period: 'week', ms: 2 * 3_600_000 }),
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(
+      await screen.findByRole('button', { name: 'Start Gym, 1m of 2h this week' }),
+    ).toBeInTheDocument()
+  })
+
+  it('clears a goal when the hours are emptied', async () => {
+    const gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
+    await updateActivity(gym.id, { goal: { period: 'day', ms: 3_600_000 } })
+    const user = userEvent.setup()
+    render(<ActivitiesPanel running={null} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.clear(screen.getByRole('textbox', { name: 'Goal hours for Gym' }))
+    await user.tab()
+
+    await waitFor(async () => expect(await getActivity(gym.id)).not.toHaveProperty('goal'))
+  })
+
+  it('explains a goal that is not a number', async () => {
+    await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
+    const user = userEvent.setup()
+    render(<ActivitiesPanel running={null} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.type(screen.getByRole('textbox', { name: 'Goal hours for Gym' }), 'lots{Enter}')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('like 2 or 1.5')
+  })
+
   it('shows a hint when there are no activities', async () => {
     render(<ActivitiesPanel running={null} />)
     expect(await screen.findByText(/add an activity/i)).toBeInTheDocument()
-    expect(tiles()).toHaveLength(1)
+    expect(screen.queryAllByRole('button', { name: /^Start / })).toHaveLength(0)
+    expect(screen.getByRole('button', { name: /new activity/i })).toBeInTheDocument()
   })
 })

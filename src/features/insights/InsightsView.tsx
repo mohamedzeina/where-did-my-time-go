@@ -9,6 +9,7 @@ import { useStableLiveQuery } from '../../lib/useStableLiveQuery'
 import { ActivityBars } from './ActivityBars'
 import { CalendarHeatmap } from './CalendarHeatmap'
 import { DailyChart } from './DailyChart'
+import { GoalsSection } from './GoalsSection'
 import { seriesFor } from './series'
 import { StatTiles } from './StatTiles'
 import '../views.css'
@@ -35,7 +36,9 @@ export function InsightsView() {
     const earliest = preset === 'all' ? await firstSessionStart() : undefined
     const from = preset === 'all' ? startOfDay(earliest ?? now) : range.from
     const [sessions, activities] = await Promise.all([
-      listSessions({ from, to: range.to }),
+      // From the Monday before, so weekly goals are judged on whole weeks. Everything else
+      // clips to [from, to), so the extra days don't leak into other numbers.
+      listSessions({ from: startOfWeek(from), to: range.to }),
       listActivities({ includeArchived: true }),
     ])
     return { from, sessions, activities: new Map(activities.map((a) => [a.id, a])) }
@@ -104,6 +107,14 @@ export function InsightsView() {
       {data && summary && (
         <div className={stale ? 'insights-range is-stale' : 'insights-range'}>
           <StatTiles summary={summary} top={totals[0]} activities={data.activities} now={now} />
+
+          <GoalsSection
+            activities={data.activities}
+            sessions={data.sessions}
+            from={from}
+            to={range.to}
+            now={now}
+          />
 
           {summary.total === 0 ? (
             <p className="view-lede">

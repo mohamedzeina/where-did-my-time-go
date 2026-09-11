@@ -1,0 +1,46 @@
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+.segmented-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.segmented-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented-option span {
+  display: block;
+  padding: 2px var(--space-2);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.segmented-option:hover span {
+  color: var(--text);
+}
+
+.segmented-option input:checked + span {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.segmented-option input:focus-visible + span {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}

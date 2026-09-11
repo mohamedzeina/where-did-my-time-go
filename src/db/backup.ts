@@ -1,5 +1,6 @@
+import { assertValidGoal } from './activities'
 import { db, type SessionRow } from './db'
-import type { Activity, Session } from './types'
+import type { Activity, Goal, Session } from './types'
 
 export const BACKUP_APP = 'where-did-my-time-go'
 export const BACKUP_VERSION = 1
@@ -59,7 +60,26 @@ export function parseBackup(value: unknown): Backup {
     ) {
       throw new Error(`Activity ${i + 1} in this backup is damaged.`)
     }
-    return { id: a.id, name: a.name, color: a.color, archived: a.archived, createdAt: a.createdAt }
+    const activity: Activity = {
+      id: a.id,
+      name: a.name,
+      color: a.color,
+      archived: a.archived,
+      createdAt: a.createdAt,
+    }
+    // Goals arrived after the first backup format; older files simply don't have them.
+    if (a.goal !== undefined) {
+      const goal = a.goal
+      try {
+        if (!isObject(goal)) throw new Error()
+        const parsed = { period: goal.period, ms: goal.ms } as Goal
+        assertValidGoal(parsed)
+        activity.goal = parsed
+      } catch {
+        throw new Error(`The goal on activity ${i + 1} in this backup is damaged.`)
+      }
+    }
+    return activity
   })
   const activityIds = new Set(activities.map((a) => a.id))
   if (activityIds.size !== activities.length) {

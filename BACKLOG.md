@@ -104,9 +104,15 @@ Only one session runs at a time. Starting another activity stops the current one
       its activity instead (a mis-tap fix). Manual entries and edits aren't affected.
       _Done when:_ rapid start/stop leaves no sessions, and a quick switch keeps one session.
 
+- [x] **12. Goals**
+      An optional daily or weekly time goal per activity, set in the activity editor. Tiles
+      show live progress toward it, reaching it shows a notice, and Insights shows how often
+      each goal was met in the range. Weeks start on Monday. Backups carry goals.
+      _Done when:_ a goal set on an activity shows progress on its tile and in Insights.
+
 ## Later / ideas
 
-- Daily or weekly goals per activity
+- Limits as well as targets (e.g. Meetings at most 2h/day)
 - Tags and notes on sessions, search
 - Pomodoro mode
 - Idle detection ("you were away 20 min, keep that time?")
@@ -153,3 +159,9 @@ Only one session runs at a time. Starting another activity stops the current one
   the activity instead. Also from review: bars are sized from the rounded value their label
   shows and rows sort by it, and every live readout (clock, title, tiles, Today) shares one
   ticker aligned to the session start, so they change on the same frame.
+- 2026-09-12 — Step 12, goals. Daily/weekly targets per activity, a segmented LED meter on the
+  tile, a notice when one is reached, and a Goals section in Insights (met N of M, one dot per
+  period). Edit mode became a console list with aligned columns; dropdowns are styled through
+  Chromium's customizable select; the new-activity form takes its own row. A full-width
+  console row layout was tried for the Timer list and dropped as too tall: the compact grid
+  stays, the console stays for editing.

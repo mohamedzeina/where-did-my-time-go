@@ -1,13 +1,27 @@
 import { db } from './db'
 import { stopSession } from './sessions'
-import type { Activity } from './types'
+import type { Activity, Goal } from './types'
 
 export interface NewActivity {
   name: string
   color: string
 }
 
-export type ActivityChanges = Partial<Pick<Activity, 'name' | 'color' | 'archived'>>
+export type ActivityChanges = Partial<Pick<Activity, 'name' | 'color' | 'archived'>> & {
+  /** A new goal, or `null` to remove it. */
+  goal?: Goal | null
+}
+
+const PERIOD_MS = { day: 24 * 3_600_000, week: 7 * 24 * 3_600_000 }
+
+/** Throws if a goal is impossible: nothing, or more time than its period has. */
+export function assertValidGoal(goal: Goal): void {
+  if (goal.period !== 'day' && goal.period !== 'week') throw new Error('Pick a day or a week.')
+  if (!(goal.ms > 0)) throw new Error('Set a goal above zero, or clear it.')
+  if (goal.ms > PERIOD_MS[goal.period]) {
+    throw new Error(`A ${goal.period} only has ${goal.period === 'day' ? 24 : 168} hours.`)
+  }
+}
 
 async function cleanName(name: string, exceptId?: string): Promise<string> {
   const trimmed = name.trim()
@@ -45,13 +59,20 @@ export async function listActivities({ includeArchived = false } = {}): Promise<
   return includeArchived ? all : all.filter((a) => !a.archived)
 }
 
-/** Renames, recolors or (un)archives an activity. Archiving stops its timer if it's running. */
+/**
+ * Renames, recolors, (un)archives or sets the goal of an activity. Archiving stops its timer
+ * if it's running.
+ */
 export async function updateActivity(id: string, changes: ActivityChanges): Promise<Activity> {
+  if (changes.goal) assertValidGoal(changes.goal)
   return db.transaction('rw', db.activities, db.sessions, async () => {
     const existing = await db.activities.get(id)
     if (!existing) throw new Error(`Activity ${id} not found.`)
 
-    const updated: Activity = { ...existing, ...changes }
+    const { goal, ...rest } = changes
+    const updated: Activity = { ...existing, ...rest }
+    if (goal) updated.goal = { period: goal.period, ms: goal.ms }
+    if (goal === null) delete updated.goal
     if (changes.name !== undefined) updated.name = await cleanName(changes.name, id)
     await db.activities.put(updated)
 

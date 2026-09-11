@@ -8,6 +8,15 @@ export interface Activity {
   archived: boolean
   /** Epoch milliseconds. */
   createdAt: number
+  /** How much time you aim to spend on it each day or week, if anything. */
+  goal?: Goal
+}
+
+/** A time target per calendar day, or per week starting Monday. */
+export interface Goal {
+  period: 'day' | 'week'
+  /** Target in milliseconds, more than 0 and no more than the period's length. */
+  ms: number
 }
 
 /** One stretch of time spent on an activity. */

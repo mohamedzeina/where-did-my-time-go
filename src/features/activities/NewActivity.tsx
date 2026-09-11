@@ -42,7 +42,7 @@ export function NewActivity({ usedColors }: { usedColors: string[] }) {
 
   return (
     <form
-      className="tile is-editing"
+      className="tile is-editing tile-new-form"
       style={{ '--tile-color': color } as CSSProperties}
       onSubmit={submit}
       onKeyDown={(event) => event.key === 'Escape' && close()}

@@ -20,6 +20,14 @@ export function announce(text: string, durationMs = 4000): void {
   }, durationMs)
 }
 
+/** Removes the current message right away. */
+export function clearNotice(): void {
+  clearTimeout(clearTimer)
+  if (current === undefined) return
+  current = undefined
+  emit()
+}
+
 export function useNotice(): string | undefined {
   return useSyncExternalStore(
     (listener) => {

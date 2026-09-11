@@ -86,6 +86,30 @@ describe('updateActivity', () => {
   })
 })
 
+describe('goals', () => {
+  it('sets, changes and clears a goal', async () => {
+    const gym = await createActivity({ name: 'Gym', color: '#111' })
+
+    await updateActivity(gym.id, { goal: { period: 'week', ms: 3 * 3_600_000 } })
+    expect((await getActivity(gym.id))?.goal).toEqual({ period: 'week', ms: 3 * 3_600_000 })
+
+    await updateActivity(gym.id, { name: 'Weights' })
+    expect((await getActivity(gym.id))?.goal).toEqual({ period: 'week', ms: 3 * 3_600_000 })
+
+    await updateActivity(gym.id, { goal: null })
+    expect(await getActivity(gym.id)).not.toHaveProperty('goal')
+  })
+
+  it.each([
+    [{ period: 'day', ms: 0 }, /above zero/],
+    [{ period: 'day', ms: 25 * 3_600_000 }, /only has 24 hours/],
+    [{ period: 'week', ms: 169 * 3_600_000 }, /only has 168 hours/],
+  ] as const)('rejects %o', async (goal, message) => {
+    const gym = await createActivity({ name: 'Gym', color: '#111' })
+    await expect(updateActivity(gym.id, { goal })).rejects.toThrow(message)
+  })
+})
+
 describe('deleteActivity', () => {
   it('removes the activity and all of its sessions', async () => {
     const gym = await createActivity({ name: 'Gym', color: '#111' })

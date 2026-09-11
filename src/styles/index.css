@@ -135,6 +135,101 @@ h1[tabindex='-1']:focus {
   color: var(--text-muted);
 }
 
+/*
+ * Dropdowns: the browser's own arrow and chrome replaced with a thin chevron that matches
+ * the rest of the controls. The open list stays native (dark, thanks to color-scheme).
+ */
+select.input {
+  appearance: none;
+  padding-inline-end: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239aa0c6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 10px 6px;
+  cursor: pointer;
+}
+
+select.input option {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/*
+ * Where the browser allows it (Chromium's customizable select), style the open list too:
+ * a dark panel with muted options, a soft highlight and a sodium check on the chosen one.
+ * Keyboard and screen reader behavior stay native. Other browsers keep the list above.
+ */
+@supports (appearance: base-select) {
+  select.input,
+  select.input::picker(select) {
+    appearance: base-select;
+  }
+
+  select.input {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-inline-end: var(--space-3);
+    background-image: none;
+  }
+
+  select.input::picker-icon {
+    content: '';
+    inline-size: 10px;
+    block-size: 6px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239aa0c6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      no-repeat center / contain;
+    transition: rotate 0.15s var(--ease-out);
+  }
+
+  select.input:open::picker-icon {
+    rotate: 180deg;
+  }
+
+  select.input::picker(select) {
+    margin-block-start: 4px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.4);
+  }
+
+  select.input option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 6px var(--space-3) 6px var(--space-2);
+    border-radius: 3px;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  select.input option:hover,
+  select.input option:focus-visible {
+    background: rgb(236 237 247 / 0.07);
+    color: var(--text);
+    outline: none;
+  }
+
+  select.input option:checked {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  select.input option::checkmark {
+    content: '✓';
+    inline-size: 1em;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  select.input option:not(:checked)::checkmark {
+    visibility: hidden;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

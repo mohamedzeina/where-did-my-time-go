@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createActivity } from '../../db/activities'
+import { createActivity, updateActivity } from '../../db/activities'
 import { db } from '../../db/db'
 import { addSession } from '../../db/sessions'
 import type { Activity } from '../../db/types'
@@ -82,6 +82,26 @@ describe('InsightsView', () => {
     // Daily table: one row per day plus the header, with a column per activity.
     expect(within(tables[1]).getAllByRole('row')).toHaveLength(8)
     expect(within(tables[1]).getByRole('columnheader', { name: 'Reading' })).toBeInTheDocument()
+  })
+
+  it('shows how often each goal was met', async () => {
+    await updateActivity(reading.id, { goal: { period: 'day', ms: 2 * HOUR } })
+    render(<InsightsView />)
+
+    const goals = await screen.findByRole('region', { name: 'Goals' })
+    const row = within(goals).getByRole('listitem')
+    expect(row).toHaveTextContent('Reading')
+    expect(row).toHaveTextContent('2h a day')
+    // Yesterday's 3h meets it; the five days before miss it; today isn't over yet.
+    expect(row).toHaveTextContent('met 1 of 6 days')
+    expect(row.querySelectorAll('.goal-dot')).toHaveLength(7)
+    expect(row.querySelectorAll('.goal-dot.is-met')).toHaveLength(1)
+  })
+
+  it('leaves the goals section out when no activity has a goal', async () => {
+    render(<InsightsView />)
+    await screen.findByText('Tracked')
+    expect(screen.queryByRole('region', { name: 'Goals' })).not.toBeInTheDocument()
   })
 
   it('says so when a range has nothing tracked', async () => {

@@ -9,11 +9,65 @@
 
 .activity-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(10rem, 100%), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(11rem, 100%), 1fr));
   gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Name on top; the live timer and goal progress, when there are any, stack beneath it. */
+.tile.tile-button {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.tile-button:hover {
+  border-color: color-mix(in srgb, var(--tile-color) 60%, var(--line));
+  background: color-mix(in srgb, var(--tile-color) 8%, var(--surface));
+}
+
+/* The one being timed: tinted in its color, outlined, with a live elapsed readout. */
+.tile-button.is-running {
+  border-color: var(--tile-color);
+  background: color-mix(in srgb, var(--tile-color) 18%, var(--surface));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--tile-color) 30%, transparent);
+}
+
+.tile-elapsed {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* Time done and target on the left, share on the right. */
+.tile-progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  inline-size: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-pct {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.tile-pct.is-met {
+  color: var(--ok);
 }
 
 /*
@@ -46,49 +100,183 @@
   background: var(--tile-color, var(--line));
 }
 
-.tile-name {
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
-
-.tile-button {
-  justify-content: space-between;
-  gap: var(--space-3);
-  cursor: pointer;
-}
-
-.tile-button:hover {
-  border-color: color-mix(in srgb, var(--tile-color) 60%, var(--line));
-  background: color-mix(in srgb, var(--tile-color) 8%, var(--surface));
-}
-
-/* The one being timed: tinted in its color, outlined, with a live elapsed readout. */
-.tile-button.is-running {
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 2px;
-  border-color: var(--tile-color);
-  background: color-mix(in srgb, var(--tile-color) 18%, var(--surface));
-  box-shadow: 0 0 18px color-mix(in srgb, var(--tile-color) 30%, transparent);
-}
-
-.tile-elapsed {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-family: var(--font-mono);
-  font-size: var(--step-mono);
-  font-variation-settings: 'wdth' 87.5;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-
 .tile-rec {
   inline-size: 6px;
   block-size: 6px;
   border-radius: 50%;
   background: var(--accent);
+}
+
+/* The time done, and the target it counts toward: "2h 36m /4h day". */
+.tile-done {
+  color: var(--text);
+}
+
+.tile-target {
+  color: var(--text-muted);
+}
+
+/*
+ * The goal meter: one bar cut into segments by a mask, lit in the activity's color up to
+ * the share done. Reads like a level meter rather than a web progress bar.
+ */
+.tile-meter {
+  display: block;
+  inline-size: 100%;
+  block-size: 7px;
+  margin-block-start: var(--space-1);
+  background: linear-gradient(
+    to right,
+    var(--tile-color) 0 calc(var(--fill) * 100%),
+    rgb(236 237 247 / 0.1) calc(var(--fill) * 100%) 100%
+  );
+  mask: repeating-linear-gradient(
+    to right,
+    #000 0 calc(100% / var(--segments) - 2px),
+    transparent calc(100% / var(--segments) - 2px) calc(100% / var(--segments))
+  );
+}
+
+.tile-meter.is-met {
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tile-color) 60%, transparent));
+}
+
+/*
+ * Edit mode is a console: one row per activity, columns lined up across rows and labelled
+ * once at the top, rather than five little forms side by side.
+ */
+.editor-list {
+  /* Shared widths so the header labels sit over their columns. */
+  --col-color: 14rem;
+  --col-goal: 11.5rem;
+  --col-action: 5.5rem;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.editor-head,
+.editor-row {
+  display: grid;
+  grid-template-columns:
+    minmax(6rem, 1fr) var(--col-color) var(--col-goal)
+    var(--col-action);
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.editor-head {
+  padding-inline: calc(var(--space-4) + 5px) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  color: var(--text-muted);
+}
+
+.editor-rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Same padding, stripe and rhythm as a console row, so Edit doesn't shift the list. */
+.editor-row {
+  position: relative;
+  padding: var(--space-2) var(--space-4) var(--space-2) calc(var(--space-4) + 5px);
+  border-block-end: 1px solid var(--line);
+}
+
+.editor-row::before {
+  content: '';
+  position: absolute;
+  inset-block: 25%;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  border-radius: 2px;
+  background: var(--tile-color, var(--line));
+}
+
+.editor-row:focus-within::before {
+  inset-block: 4px;
+  box-shadow: 0 0 10px var(--tile-color);
+}
+
+/* A name that reads as text until you touch it, matching the console row's name. */
+.editor-name {
+  inline-size: 100%;
+  margin-inline-start: calc(-1 * var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+}
+
+.editor-name:hover {
+  border-color: var(--line);
+}
+
+.editor-name:focus-visible {
+  border-color: transparent;
+  background: var(--bg);
+}
+
+.editor-error {
+  grid-column: 1 / -1;
+  font-size: var(--step--1);
+  color: var(--danger);
+}
+
+/* Goal: a small mono amount box and a day | week toggle, in the same chip style as the rest. */
+.goal-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.goal-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  color: var(--text-muted);
+  cursor: text;
+}
+
+.goal-amount:hover {
+  border-color: var(--text-faint);
+}
+
+.goal-amount:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+}
+
+.goal-amount input {
+  inline-size: 2.75rem;
+  padding: 5px 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  outline: none;
+}
+
+.goal-amount input::placeholder {
+  color: var(--text-faint);
+  font-weight: 400;
 }
 
 .tile.is-editing {
@@ -137,6 +325,27 @@
   align-self: flex-start;
 }
 
+/*
+ * The new-activity form takes a full row of its own, laid out as a strip, so opening it
+ * never stretches the tiles beside it.
+ */
+.tile.tile-new-form {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+}
+
+.tile-new-form .tile-input {
+  flex: 1 1 12rem;
+  inline-size: auto;
+  max-inline-size: 22rem;
+}
+
+.tile-new-form .tile-error {
+  flex-basis: 100%;
+}
+
 .tile-new {
   justify-content: center;
   gap: var(--space-2);
@@ -153,6 +362,38 @@
 .tile-new:hover {
   border-color: var(--text-faint);
   color: var(--text);
+}
+
+/* Phones: the columns stack, with archive tucked beside the name. */
+@media (max-width: 799px) {
+  .editor-head {
+    display: none;
+  }
+
+  .editor-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name archive'
+      'colors colors'
+      'goal goal';
+    gap: var(--space-3);
+  }
+
+  .editor-row .editor-name {
+    grid-area: name;
+  }
+
+  .editor-row .swatches {
+    grid-area: colors;
+  }
+
+  .editor-row .goal-field {
+    grid-area: goal;
+  }
+
+  .editor-row > .text-button {
+    grid-area: archive;
+  }
 }
 
 .archived {
