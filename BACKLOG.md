@@ -69,7 +69,7 @@ Only one session runs at a time. Starting another activity stops the current one
       Archived activities can be deleted (with their sessions) after a confirmation.
       _Done when:_ activities persist across reloads.
 
-- [ ] **5. Timer**
+- [x] **5. Timer**
       Pick an activity, start/stop, big live elapsed display, running state restored after reload,
       running time shown in the browser tab title.
       _Done when:_ you can time something, close the tab, reopen it, and it's still counting.
@@ -120,3 +120,6 @@ Only one session runs at a time. Starting another activity stops the current one
 - 2026-09-11 — Step 4, activities. Tiles under the clock with an edit mode; five starters seeded
   on first run only. 8-color palette validated with the dataviz checker on Midnight (kept the
   yellow slot; the "now" line got a midnight keyline instead). Delete lives behind archive.
+- 2026-09-11 — Step 5, timer. Tiles start/switch/stop; LED lights in the activity color; tab
+  title shows the running time. Ticks are aligned to whole seconds from the session start, and
+  only the clock, running tile and title re-render each second.

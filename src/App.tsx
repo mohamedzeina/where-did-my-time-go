@@ -1,5 +1,6 @@
-import { useEffect, type ComponentType } from 'react'
+import type { ComponentType } from 'react'
 import { DayRibbon } from './app/DayRibbon'
+import { DocumentTitle } from './app/DocumentTitle'
 import { StatusBar } from './app/StatusBar'
 import { useRoute, useRouteShortcuts, type Route } from './app/useRoute'
 import { HistoryView } from './features/history/HistoryView'
@@ -20,12 +21,9 @@ function App() {
 
   useRouteShortcuts()
 
-  useEffect(() => {
-    document.title = `${current.label} | where did my time go?`
-  }, [current.label])
-
   return (
     <div className="shell">
+      <DocumentTitle viewLabel={current.label} />
       <div className="shell-ribbon">
         <DayRibbon />
       </div>

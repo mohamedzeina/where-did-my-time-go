@@ -1,0 +1,66 @@
+/* While recording, the LED lights up in the activity's color. */
+.timer-head .clock:not(.is-idle) {
+  color: var(--clock-color, var(--text));
+  text-shadow: 0 0 28px color-mix(in srgb, var(--clock-color, var(--text)) 40%, transparent);
+}
+
+.readout-status.is-running {
+  color: var(--text);
+}
+
+.readout-status.is-running .readout-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .readout-status.is-running .readout-dot,
+  .tile-rec {
+    animation: rec-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes rec-pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+}
+
+.timer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-5);
+}
+
+.timer-activity {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.stop-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--text);
+  border-radius: var(--radius-sm);
+  background: var(--text);
+  color: var(--bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stop-button:hover {
+  background: none;
+  color: var(--text);
+}
+
+.stop-icon {
+  inline-size: 0.7em;
+  block-size: 0.7em;
+  border-radius: 1px;
+  background: currentColor;
+}

@@ -67,6 +67,46 @@
   overflow-wrap: anywhere;
 }
 
+.tile-button {
+  justify-content: space-between;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.tile-button:hover {
+  border-color: color-mix(in srgb, var(--tile-color) 60%, var(--line));
+  background: color-mix(in srgb, var(--tile-color) 8%, var(--surface));
+}
+
+/* The one being timed: tinted in its color, outlined, with a live elapsed readout. */
+.tile-button.is-running {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  border-color: var(--tile-color);
+  background: color-mix(in srgb, var(--tile-color) 18%, var(--surface));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--tile-color) 30%, transparent);
+}
+
+.tile-elapsed {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.tile-rec {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
 .tile.is-editing {
   flex-direction: column;
   align-items: stretch;

@@ -1,12 +1,17 @@
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
+import type { RunningTimer } from '../timer/useRunningTimer'
 import { ActivityEditor } from './ActivityEditor'
+import { ActivityTile } from './ActivityTile'
 import { ArchivedItem } from './ArchivedItem'
 import { NewActivity } from './NewActivity'
 import { useActivities } from './useActivities'
 import './activities.css'
 
-/** The activities you track, as a grid of tiles, with an edit mode for managing them. */
-export function ActivitiesPanel() {
+/**
+ * The activities you track, as a grid of tiles: press one to start timing it (or to stop it
+ * if it's already running). Edit mode swaps the tiles for editors.
+ */
+export function ActivitiesPanel({ running }: { running: RunningTimer | null }) {
   const activities = useActivities()
   const [editing, setEditing] = useState(false)
 
@@ -39,9 +44,12 @@ export function ActivitiesPanel() {
             {editing ? (
               <ActivityEditor activity={activity} />
             ) : (
-              <div className="tile" style={{ '--tile-color': activity.color } as CSSProperties}>
-                <span className="tile-name">{activity.name}</span>
-              </div>
+              <ActivityTile
+                activity={activity}
+                runningSince={
+                  running?.activity.id === activity.id ? running.session.start : undefined
+                }
+              />
             )}
           </li>
         ))}

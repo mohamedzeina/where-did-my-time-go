@@ -19,7 +19,7 @@ describe('ActivitiesPanel', () => {
     const old = await createActivity({ name: 'Old hobby', color: ACTIVITY_COLORS[1].hex })
     await updateActivity(old.id, { archived: true })
 
-    render(<ActivitiesPanel />)
+    render(<ActivitiesPanel running={null} />)
 
     expect(await screen.findByText('Gym')).toBeInTheDocument()
     expect(screen.queryByText('Old hobby')).not.toBeInTheDocument()
@@ -28,7 +28,7 @@ describe('ActivitiesPanel', () => {
   it('creates an activity with the next free color', async () => {
     await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
     const user = userEvent.setup()
-    render(<ActivitiesPanel />)
+    render(<ActivitiesPanel running={null} />)
 
     await user.click(await screen.findByRole('button', { name: /new activity/i }))
     expect(screen.getByRole('radio', { name: ACTIVITY_COLORS[1].name })).toBeChecked()
@@ -42,7 +42,7 @@ describe('ActivitiesPanel', () => {
   it('explains why a duplicate name was refused', async () => {
     await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
     const user = userEvent.setup()
-    render(<ActivitiesPanel />)
+    render(<ActivitiesPanel running={null} />)
 
     await user.click(await screen.findByRole('button', { name: /new activity/i }))
     await user.type(screen.getByRole('textbox', { name: 'New activity name' }), 'gym{Enter}')
@@ -54,7 +54,7 @@ describe('ActivitiesPanel', () => {
   it('renames, recolors and archives in edit mode', async () => {
     const gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
     const user = userEvent.setup()
-    render(<ActivitiesPanel />)
+    render(<ActivitiesPanel running={null} />)
 
     await user.click(await screen.findByRole('button', { name: 'Edit' }))
 
@@ -82,7 +82,7 @@ describe('ActivitiesPanel', () => {
     await addSession({ activityId: gym.id, start: 20, end: 30 })
     await updateActivity(gym.id, { archived: true })
     const user = userEvent.setup()
-    render(<ActivitiesPanel />)
+    render(<ActivitiesPanel running={null} />)
 
     await user.click(await screen.findByRole('button', { name: 'Edit' }))
     await user.click(screen.getByRole('button', { name: 'Delete Gym' }))
@@ -104,7 +104,7 @@ describe('ActivitiesPanel', () => {
     const gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
     await updateActivity(gym.id, { archived: true })
     const user = userEvent.setup()
-    render(<ActivitiesPanel />)
+    render(<ActivitiesPanel running={null} />)
 
     await user.click(await screen.findByRole('button', { name: 'Edit' }))
     await user.click(screen.getByRole('button', { name: 'Delete Gym' }))
@@ -119,7 +119,7 @@ describe('ActivitiesPanel', () => {
   })
 
   it('shows a hint when there are no activities', async () => {
-    render(<ActivitiesPanel />)
+    render(<ActivitiesPanel running={null} />)
     expect(await screen.findByText(/add an activity/i)).toBeInTheDocument()
     expect(tiles()).toHaveLength(1)
   })
