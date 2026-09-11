@@ -1,21 +1,24 @@
 import type { CSSProperties } from 'react'
 import type { Activity, Session } from '../../db/types'
 import { formatClock } from '../../lib/day'
-import { formatHoursMinutes, totalsByActivity } from '../../lib/totals'
+import { barShares, formatHoursMinutes, totalsByActivity } from '../../lib/totals'
+import { useTicker } from '../../lib/useTicker'
 import { ElapsedText } from '../timer/TimerReadout'
+import { useRunningTimer } from '../timer/useRunningTimer'
 import { useToday } from './useToday'
 import './today.css'
 
 /** Today at a glance: tracked vs. elapsed, time per activity, and the sessions themselves. */
 export function TodayPanel() {
-  // Once a second, so a timer that just started shows up in the totals straight away.
-  const today = useToday(1000)
+  // While a timer runs, tick in step with its clock so the totals change on the same second.
+  const running = useRunningTimer()
+  const today = useToday(useTicker(running?.session.start))
   if (!today) return null
 
   const { from, to, now, sessions, activities } = today
   const totals = totalsByActivity(sessions, from, to, now)
   const tracked = totals.reduce((sum, t) => sum + t.ms, 0)
-  const longest = totals[0]?.ms ?? 1
+  const shares = barShares(totals)
 
   return (
     <section className="today" aria-labelledby="today-title">
@@ -36,7 +39,7 @@ export function TodayPanel() {
       ) : (
         <div className="today-body">
           <ul className="today-totals" aria-label="Time per activity today">
-            {totals.map(({ activityId, ms }) => {
+            {totals.map(({ activityId, ms }, i) => {
               const activity = activities.get(activityId)
               return (
                 <li
@@ -45,7 +48,7 @@ export function TodayPanel() {
                   style={
                     {
                       '--tile-color': activity?.color,
-                      '--share': ms / longest,
+                      '--share': shares[i],
                     } as CSSProperties
                   }
                 >

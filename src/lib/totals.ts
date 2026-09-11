@@ -39,7 +39,7 @@ export interface ActivityTotal {
   ms: number
 }
 
-/** Time per activity inside `[from, to)`, largest first. */
+/** Time per activity inside `[from, to)`, largest (as displayed) first. */
 export function totalsByActivity(
   sessions: Session[],
   from: number,
@@ -52,7 +52,27 @@ export function totalsByActivity(
     if (part)
       totals.set(session.activityId, (totals.get(session.activityId) ?? 0) + part.end - part.start)
   }
-  return [...totals].map(([activityId, ms]) => ({ activityId, ms })).sort((a, b) => b.ms - a.ms)
+  // Sorted by the value shown, not exact ms, so rows with equal labels don't trade places as
+  // a running timer ticks; the sort is stable, so ties stay in order of first tracked.
+  return [...totals]
+    .map(([activityId, ms]) => ({ activityId, ms }))
+    .sort((a, b) => shownMs(b.ms) - shownMs(a.ms))
+}
+
+/**
+ * `ms` rounded down to what {@link formatHoursMinutes} shows: whole seconds under a minute,
+ * whole minutes above. Size bars from this so a bar only moves when its label changes.
+ */
+export function shownMs(ms: number): number {
+  const unit = ms < 60_000 ? 1_000 : 60_000
+  return Math.floor(Math.max(0, ms) / unit) * unit
+}
+
+/** Bar lengths for totals, each as a fraction of the largest, matching their labels. */
+export function barShares(totals: ActivityTotal[]): number[] {
+  const shown = totals.map((t) => shownMs(t.ms))
+  const longest = Math.max(...shown, 0)
+  return shown.map((ms) => (longest > 0 ? ms / longest : 0))
 }
 
 /**

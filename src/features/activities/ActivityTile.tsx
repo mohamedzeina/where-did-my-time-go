@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react'
-import { startSession, stopSession } from '../../db/sessions'
+import { startSession } from '../../db/sessions'
 import type { Activity } from '../../db/types'
 import { ElapsedText } from '../timer/TimerReadout'
+import { stopTimer } from '../timer/toggleTimer'
 
 interface ActivityTileProps {
   activity: Activity
@@ -20,7 +21,7 @@ export function ActivityTile({ activity, runningSince }: ActivityTileProps) {
       style={{ '--tile-color': activity.color } as CSSProperties}
       aria-pressed={running}
       aria-label={running ? `Stop ${activity.name}` : `Start ${activity.name}`}
-      onClick={() => void (running ? stopSession() : startSession(activity.id))}
+      onClick={() => void (running ? stopTimer() : startSession(activity.id))}
     >
       <span className="tile-name">{activity.name}</span>
       {running && (

@@ -98,6 +98,12 @@ Only one session runs at a time. Starting another activity stops the current one
       offline support.
       _Done when:_ it installs as an app and works offline.
 
+- [x] **11. Minimum session length**
+      Timed sessions under 10 seconds aren't kept, so spam-clicking and mis-taps leave nothing
+      behind. Stopping one discards it with a short notice; switching away from one changes
+      its activity instead (a mis-tap fix). Manual entries and edits aren't affected.
+      _Done when:_ rapid start/stop leaves no sessions, and a quick switch keeps one session.
+
 ## Later / ideas
 
 - Daily or weekly goals per activity
@@ -142,3 +148,8 @@ Only one session runs at a time. Starting another activity stops the current one
   PWA via vite-plugin-pwa with a ribbon icon, verified installable with no errors and working
   offline from the production build. Focus moves to the view heading on navigation, Today
   totals refresh every second, dark thin scrollbars, README rewritten.
+- 2026-09-11 — Step 11, minimum session length (added after the backlog was done). Timed
+  sessions under 10 s are discarded on stop with a notice; switching within 10 s corrects
+  the activity instead. Also from review: bars are sized from the rounded value their label
+  shows and rows sort by it, and every live readout (clock, title, tiles, Today) shares one
+  ticker aligned to the session start, so they change on the same frame.

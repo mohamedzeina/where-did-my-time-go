@@ -7,6 +7,7 @@ import {
   deleteSession,
   getRunningSession,
   listSessions,
+  MIN_SESSION_MS,
   startSession,
   stopSession,
   updateSession,
@@ -32,11 +33,20 @@ describe('startSession', () => {
 
   it('stops the running session when another activity starts', async () => {
     const first = await startSession(gym.id, 1000)
-    const second = await startSession(reading.id, 5000)
+    const second = await startSession(reading.id, 60_000)
 
     expect(await getRunningSession()).toEqual(second)
-    const [stopped] = await listSessions({ from: 0, to: 10_000, activityId: gym.id })
-    expect(stopped).toEqual({ ...first, end: 5000 })
+    const [stopped] = await listSessions({ from: 0, to: 100_000, activityId: gym.id })
+    expect(stopped).toEqual({ ...first, end: 60_000 })
+  })
+
+  it('treats a switch within 10 seconds as correcting the activity', async () => {
+    const first = await startSession(gym.id, 1000)
+    const corrected = await startSession(reading.id, 1000 + MIN_SESSION_MS - 1)
+
+    expect(corrected).toEqual({ ...first, activityId: reading.id })
+    expect(await getRunningSession()).toEqual(corrected)
+    expect(await listSessions({ from: 0, to: Infinity })).toHaveLength(1)
   })
 
   it('keeps the current session when the same activity is started again', async () => {
@@ -55,12 +65,22 @@ describe('startSession', () => {
 })
 
 describe('stopSession', () => {
-  it('ends the running session', async () => {
+  it('ends and keeps a session of 10 seconds or more', async () => {
     const session = await startSession(gym.id, 1000)
-    const stopped = await stopSession(4000)
+    const result = await stopSession(1000 + MIN_SESSION_MS)
 
-    expect(stopped).toEqual({ ...session, end: 4000 })
+    expect(result).toEqual({ session: { ...session, end: 1000 + MIN_SESSION_MS }, kept: true })
     expect(await getRunningSession()).toBeUndefined()
+    expect(await listSessions({ from: 0, to: Infinity })).toHaveLength(1)
+  })
+
+  it('discards a session under 10 seconds', async () => {
+    await startSession(gym.id, 1000)
+    const result = await stopSession(1000 + MIN_SESSION_MS - 1)
+
+    expect(result?.kept).toBe(false)
+    expect(await getRunningSession()).toBeUndefined()
+    expect(await listSessions({ from: 0, to: Infinity })).toEqual([])
   })
 
   it('does nothing when no timer is running', async () => {
@@ -69,7 +89,7 @@ describe('stopSession', () => {
 
   it('never ends a session before it started', async () => {
     await startSession(gym.id, 5000)
-    expect((await stopSession(4000))?.end).toBe(5000)
+    expect((await stopSession(4000))?.session.end).toBe(5000)
   })
 })
 

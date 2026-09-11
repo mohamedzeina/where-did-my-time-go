@@ -3,14 +3,13 @@ import { listActivities } from '../../db/activities'
 import { listSessions } from '../../db/sessions'
 import type { Activity, Session } from '../../db/types'
 import { endOfDay, startOfDay } from '../../lib/totals'
-import { useNow } from '../../lib/useNow'
 
 export interface Today {
   /** Local midnight today, epoch ms. */
   from: number
   /** Local midnight tomorrow, epoch ms. */
   to: number
-  /** Refreshed every `refreshMs`, for counting running sessions. */
+  /** The caller's current time, for counting a running session. */
   now: number
   /** Today's sessions, oldest first, including one still running. */
   sessions: Session[]
@@ -18,9 +17,11 @@ export interface Today {
   activities: Map<string, Activity>
 }
 
-/** Today's sessions and the activities they belong to, live. Rolls over at midnight. */
-export function useToday(refreshMs = 15_000): Today | undefined {
-  const now = useNow(refreshMs).getTime()
+/**
+ * Today's sessions and the activities they belong to, live, for the day containing `now`.
+ * The caller decides how often `now` moves on (and so when it rolls over at midnight).
+ */
+export function useToday(now: number): Today | undefined {
   const from = startOfDay(now)
   const to = endOfDay(now)
 

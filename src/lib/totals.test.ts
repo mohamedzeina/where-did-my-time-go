@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { Session } from '../db/types'
-import { clipSession, endOfDay, formatHoursMinutes, startOfDay, totalsByActivity } from './totals'
+import {
+  barShares,
+  clipSession,
+  endOfDay,
+  formatHoursMinutes,
+  shownMs,
+  startOfDay,
+  totalsByActivity,
+} from './totals'
 
 const at = (h: number, m = 0) => new Date(2026, 8, 11, h, m).getTime()
 const session = (activityId: string, start: number, end: number | null): Session => ({
@@ -54,6 +62,32 @@ describe('totalsByActivity', () => {
     expect(totalsByActivity(sessions, at(0), at(12), at(23, 30))).toEqual([
       { activityId: 'work', ms: 2 * 3_600_000 },
       { activityId: 'gym', ms: 3_600_000 },
+    ])
+  })
+})
+
+describe('shownMs / barShares', () => {
+  it('rounds down to the unit the label shows', () => {
+    expect(shownMs(1_900)).toBe(1_000)
+    expect(shownMs(59_999)).toBe(59_000)
+    expect(shownMs(125_500)).toBe(120_000)
+  })
+
+  it('gives equal labels equal bars, however far apart the milliseconds are', () => {
+    expect(
+      barShares([
+        { activityId: 'a', ms: 1_900 },
+        { activityId: 'b', ms: 1_100 },
+        { activityId: 'c', ms: 500 },
+      ]),
+    ).toEqual([1, 1, 0])
+  })
+
+  it('keeps equal-looking totals in the order they were first tracked', () => {
+    const sessions = [session('b', at(9), at(9) + 1_100), session('a', at(10), at(10) + 1_900)]
+    expect(totalsByActivity(sessions, at(0), at(24), at(12)).map((t) => t.activityId)).toEqual([
+      'b',
+      'a',
     ])
   })
 })

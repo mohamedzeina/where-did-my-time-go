@@ -132,6 +132,43 @@
   background-position: -1px -1px;
 }
 
+/* A brief message above the status bar, e.g. "Too short to keep". */
+.notice {
+  position: fixed;
+  inset-block-end: 3.75rem;
+  inset-inline-start: 50%;
+  z-index: 20;
+  translate: -50% 0;
+  max-inline-size: calc(100vw - 2rem);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.notice[data-visible] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .notice {
+    transition:
+      opacity 0.2s,
+      translate 0.2s var(--ease-out);
+  }
+
+  .notice:not([data-visible]) {
+    translate: -50% 6px;
+  }
+}
+
 /*
  * Mobile: name on top, the ribbon as a strip beneath it, the view in the middle and
  * navigation as a bottom bar within thumb reach.
@@ -191,5 +228,9 @@
 
   .shell-key {
     display: none;
+  }
+
+  .notice {
+    inset-block-end: 6.5rem;
   }
 }

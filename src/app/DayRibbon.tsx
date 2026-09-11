@@ -15,7 +15,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
  */
 export function DayRibbon() {
   const now = useNow(15_000)
-  const today = useToday(15_000)
+  const today = useToday(now.getTime())
   const progress = dayProgress(now)
   const clock = formatClock(now)
 

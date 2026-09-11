@@ -9,6 +9,8 @@ See [BACKLOG.md](BACKLOG.md) for how it was built, step by step, and the design 
 
 - **Timer:** press an activity to start timing it, press another to switch, or Stop. The
   running timer is saved as it goes, so it keeps counting through reloads and restarts.
+  Sessions under 10 seconds aren't kept, and switching within 10 seconds just corrects the
+  activity, so mis-taps leave nothing behind.
 - **Today:** tracked time against the day so far, a total per activity, and today's sessions.
   The day ribbon down the left edge shows every session as a band at its time of day.
 - **History:** sessions grouped by day, filtered by date range and activity. Fix any session

@@ -59,17 +59,16 @@ describe('TodayPanel', () => {
   })
 
   it('shows a timer as soon as it is stopped', async () => {
+    await startSession(gym.id, Date.now() - 2 * MIN)
     const user = userEvent.setup()
     render(<TimerView />)
 
-    await user.click(await screen.findByRole('button', { name: 'Start Gym' }))
     const log = await screen.findByRole('list', { name: "Today's sessions, newest first" })
     expect(within(log).getByText(/– now$/)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Stop' }))
-    expect(await within(log).findByText(/^\d\d:\d\d – \d\d:\d\d$/)).toBeInTheDocument()
-    // A start-stop this quick lasts under a second, or a few at most.
-    expect(within(log).getByText(/^(<1s|\ds)$/)).toBeInTheDocument()
+    expect(await within(log).findByText(/^(yesterday )?\d\d:\d\d – \d\d:\d\d$/)).toBeInTheDocument()
+    expect(within(log).getByText(/^2m$/)).toBeInTheDocument()
   })
 
   it('tells short sessions apart by their seconds', async () => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ComponentType } from 'react'
 import { DayRibbon } from './app/DayRibbon'
 import { DocumentTitle } from './app/DocumentTitle'
+import { useNotice } from './app/notice'
 import { StatusBar } from './app/StatusBar'
 import { useRoute, useRouteShortcuts, type Route } from './app/useRoute'
 import { DataView } from './features/data/DataView'
@@ -24,6 +25,7 @@ function App() {
 
   useRouteShortcuts()
   useTimerShortcut()
+  const notice = useNotice()
 
   // After switching views, start at the top and move focus to the new view's heading, so
   // keyboard and screen reader users land where the page changed.
@@ -75,6 +77,11 @@ function App() {
         </main>
         <StatusBar />
       </div>
+
+      {/* Always mounted, so screen readers announce each new message. */}
+      <p className="notice" role="status" data-visible={notice ? true : undefined}>
+        {notice}
+      </p>
     </div>
   )
 }

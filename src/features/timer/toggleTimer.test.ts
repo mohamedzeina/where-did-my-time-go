@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createActivity, updateActivity } from '../../db/activities'
 import { db } from '../../db/db'
-import { addSession, getRunningSession } from '../../db/sessions'
+import { addSession, getRunningSession, listSessions, startSession } from '../../db/sessions'
 import type { Activity } from '../../db/types'
 import { resumeTarget, toggleTimer } from './toggleTimer'
 
@@ -40,14 +40,20 @@ describe('resumeTarget', () => {
 })
 
 describe('toggleTimer', () => {
-  it('starts the resume target, then stops it', async () => {
+  it('starts the resume target, and discards it if stopped straight away', async () => {
     await addSession({ activityId: reading.id, start: 0, end: 10 })
 
     expect(await toggleTimer()).toBe('started')
     expect((await getRunningSession())?.activityId).toBe(reading.id)
 
-    expect(await toggleTimer()).toBe('stopped')
+    expect(await toggleTimer()).toBe('discarded')
     expect(await getRunningSession()).toBeUndefined()
+  })
+
+  it('stops and keeps a timer that ran long enough', async () => {
+    await startSession(gym.id, Date.now() - 60_000)
+    expect(await toggleTimer()).toBe('stopped')
+    expect(await listSessions({ from: 0, to: Infinity })).toHaveLength(1)
   })
 
   it('does nothing without activities', async () => {

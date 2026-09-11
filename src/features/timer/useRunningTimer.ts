@@ -1,8 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useEffect, useState } from 'react'
 import { getActivity } from '../../db/activities'
 import { getRunningSession } from '../../db/sessions'
 import type { Activity, Session } from '../../db/types'
+import { useTicker } from '../../lib/useTicker'
 
 export interface RunningTimer {
   session: Session
@@ -27,20 +27,6 @@ export function useRunningTimer(): RunningTimer | null | undefined {
  * display never skips or repeats a second. Returns 0 when there's no start.
  */
 export function useElapsed(start: number | undefined): number {
-  const [now, setNow] = useState(() => Date.now())
-
-  useEffect(() => {
-    if (start === undefined) return
-    let timeout: ReturnType<typeof setTimeout>
-    const tick = () => {
-      const t = Date.now()
-      setNow(t)
-      const msToNextSecond = 1000 - ((((t - start) % 1000) + 1000) % 1000)
-      timeout = setTimeout(tick, msToNextSecond + 5)
-    }
-    tick()
-    return () => clearTimeout(timeout)
-  }, [start])
-
+  const now = useTicker(start, null)
   return start === undefined ? 0 : Math.max(0, now - start)
 }

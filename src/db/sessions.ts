@@ -13,6 +13,19 @@ export type SessionChanges = Partial<Pick<Session, 'activityId' | 'start' | 'not
   end?: number
 }
 
+/**
+ * Timed sessions shorter than this aren't kept: stopping one discards it, and switching away
+ * from one just changes its activity. Mis-taps and rapid clicking leave nothing behind.
+ * Sessions added or edited by hand in History aren't held to it.
+ */
+export const MIN_SESSION_MS = 10_000
+
+export interface StopResult {
+  session: Session
+  /** False when the session was under {@link MIN_SESSION_MS} and was discarded instead. */
+  kept: boolean
+}
+
 export interface SessionQuery {
   /** Epoch ms, inclusive. */
   from: number
@@ -53,7 +66,9 @@ export async function getRunningSession(): Promise<Session | undefined> {
 /**
  * Starts timing `activityId` at `at`. Any other running session is stopped at the same
  * moment, so only one session ever runs. Starting the activity that's already running is a
- * no-op and returns that session.
+ * no-op and returns that session. Switching away from a session younger than
+ * {@link MIN_SESSION_MS} is treated as correcting a mis-tap: that session keeps its start
+ * and simply changes activity.
  */
 export async function startSession(activityId: string, at = Date.now()): Promise<Session> {
   return db.transaction('rw', db.activities, db.sessions, async () => {
@@ -61,6 +76,11 @@ export async function startSession(activityId: string, at = Date.now()): Promise
 
     const running = await runningRow()
     if (running?.activityId === activityId) return toSession(running)
+    if (running && at - running.start < MIN_SESSION_MS) {
+      const corrected = { ...toSession(running), activityId }
+      await db.sessions.put(toRow(corrected))
+      return corrected
+    }
     if (running) {
       await db.sessions.put(toRow({ ...toSession(running), end: Math.max(at, running.start) }))
     }
@@ -71,14 +91,21 @@ export async function startSession(activityId: string, at = Date.now()): Promise
   })
 }
 
-/** Stops the running session at `at` and returns it, or `undefined` if nothing was running. */
-export async function stopSession(at = Date.now()): Promise<Session | undefined> {
+/**
+ * Stops the running session at `at`. A session under {@link MIN_SESSION_MS} is deleted
+ * rather than kept. Returns `undefined` if nothing was running.
+ */
+export async function stopSession(at = Date.now()): Promise<StopResult | undefined> {
   return db.transaction('rw', db.sessions, async () => {
     const running = await runningRow()
     if (!running) return undefined
-    const stopped = { ...toSession(running), end: Math.max(at, running.start) }
-    await db.sessions.put(toRow(stopped))
-    return stopped
+    const session = { ...toSession(running), end: Math.max(at, running.start) }
+    if (session.end - session.start < MIN_SESSION_MS) {
+      await db.sessions.delete(session.id)
+      return { session, kept: false }
+    }
+    await db.sessions.put(toRow(session))
+    return { session, kept: true }
   })
 }
 

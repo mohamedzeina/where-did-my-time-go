@@ -1,10 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import type { CSSProperties } from 'react'
 import { Clock } from '../../components/Clock'
-import { stopSession } from '../../db/sessions'
 import { formatClock } from '../../lib/day'
 import { formatDuration } from '../../lib/duration'
-import { resumeTarget } from './toggleTimer'
+import { resumeTarget, stopTimer } from './toggleTimer'
 import { useElapsed, type RunningTimer } from './useRunningTimer'
 
 /** The big LED clock, its status line, and the Stop button while something is running. */
@@ -58,7 +57,7 @@ export function TimerReadout({ running }: { running: RunningTimer | null }) {
           type="button"
           className="stop-button"
           aria-keyshortcuts="Space"
-          onClick={() => void stopSession()}
+          onClick={() => void stopTimer()}
         >
           <span className="stop-icon" aria-hidden="true" />
           Stop

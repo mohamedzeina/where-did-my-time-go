@@ -33,12 +33,11 @@ describe('TimerView', () => {
   })
 
   it('switches to another activity, closing the first session', async () => {
+    await startSession(gym.id, Date.now() - 60_000)
     const user = userEvent.setup()
     render(<TimerView />)
 
-    await user.click(await screen.findByRole('button', { name: 'Start Gym' }))
-    await screen.findByRole('button', { name: 'Stop Gym' })
-    await user.click(screen.getByRole('button', { name: 'Start Reading' }))
+    await user.click(await screen.findByRole('button', { name: 'Start Reading' }))
 
     await screen.findByRole('button', { name: 'Stop Reading' })
     expect(screen.getByRole('button', { name: 'Start Gym' })).toHaveAttribute(
@@ -50,15 +49,42 @@ describe('TimerView', () => {
     expect((await getRunningSession())?.activityId).toBe(reading.id)
   })
 
-  it('stops from the Stop button', async () => {
+  it('fixes a mis-tap: switching within 10 seconds changes the activity instead', async () => {
     const user = userEvent.setup()
     render(<TimerView />)
 
     await user.click(await screen.findByRole('button', { name: 'Start Gym' }))
+    await screen.findByRole('button', { name: 'Stop Gym' })
+    await user.click(screen.getByRole('button', { name: 'Start Reading' }))
+
+    await screen.findByRole('button', { name: 'Stop Reading' })
+    const sessions = await listSessions({ from: 0, to: Infinity })
+    expect(sessions).toHaveLength(1)
+    expect(sessions[0]).toMatchObject({ activityId: reading.id, end: null })
+  })
+
+  it('stops from the Stop button, keeping a session of 10 seconds or more', async () => {
+    await startSession(gym.id, Date.now() - 60_000)
+    const user = userEvent.setup()
+    render(<TimerView />)
+
     await user.click(await screen.findByRole('button', { name: 'Stop' }))
 
     expect(await screen.findByText('idle')).toBeInTheDocument()
     expect(await getRunningSession()).toBeUndefined()
+    const [kept] = await listSessions({ from: 0, to: Infinity })
+    expect(kept.end! - kept.start).toBeGreaterThanOrEqual(60_000)
+  })
+
+  it('discards a timer stopped within 10 seconds, and says so', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(await screen.findByRole('button', { name: 'Start Gym' }))
+    await user.click(await screen.findByRole('button', { name: 'Stop' }))
+
+    expect(await screen.findByText('Too short to keep (under 10s).')).toBeInTheDocument()
+    expect(await listSessions({ from: 0, to: Infinity })).toEqual([])
   })
 
   it('stops when the running tile is pressed again', async () => {
