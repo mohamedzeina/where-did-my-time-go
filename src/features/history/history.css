@@ -1,0 +1,171 @@
+.view-history {
+  gap: var(--space-6);
+}
+
+.history-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+}
+
+.history-summary {
+  margin-inline-start: auto;
+  padding-block-end: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.history-summary strong,
+.history-day-total {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.history-day {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.history-day-total {
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-sessions {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* time · activity and note · duration · edit */
+.history-row {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr) 5.5rem auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-2);
+  border-block-end: 1px solid var(--line);
+}
+
+.history-what {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.history-what .session-name {
+  flex: none;
+  max-inline-size: 60%;
+}
+
+.history-note {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+  font-size: var(--step--1);
+}
+
+.history-next-day {
+  color: var(--accent);
+}
+
+.history-row.is-running .session-time {
+  color: var(--text);
+}
+
+/* The inline form for adding or editing a session. */
+.editor {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  margin-block: var(--space-2);
+  border: 1px solid var(--text-faint);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.editor-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(9.5rem, 100%), 1fr));
+  gap: var(--space-3);
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.editor-running {
+  display: flex;
+  align-items: center;
+  min-block-size: 2.25rem;
+  color: var(--text-muted);
+}
+
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.editor-delete {
+  margin-inline-start: auto;
+}
+
+.editor-confirm {
+  margin-inline-end: auto;
+}
+
+.editor-error {
+  font-size: var(--step--1);
+  color: var(--danger);
+}
+
+@media (max-width: 799px) {
+  /* Phones: time and duration on the first line, activity and note beneath, edit at the end. */
+  .history-row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'time duration edit'
+      'what what     edit';
+    gap: var(--space-1) var(--space-3);
+  }
+
+  .history-row .session-time {
+    grid-area: time;
+  }
+
+  .history-row .history-what {
+    grid-area: what;
+  }
+
+  .history-row .session-duration {
+    grid-area: duration;
+  }
+
+  .history-row .text-button {
+    grid-area: edit;
+  }
+
+  .history-summary {
+    inline-size: 100%;
+    margin-inline-start: 0;
+  }
+}

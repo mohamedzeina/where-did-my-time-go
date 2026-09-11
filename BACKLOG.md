@@ -78,7 +78,7 @@ Only one session runs at a time. Starting another activity stops the current one
       Under the timer: today's sessions and a per-activity total for the day.
       _Done when:_ stopping a timer immediately shows up in today's list.
 
-- [ ] **7. History**
+- [x] **7. History**
       Sessions grouped by day, filter by activity and date range, edit/delete a session, add a
       manual entry for time you forgot to track.
       _Done when:_ you can fix a mistaken session and see the change everywhere.
@@ -126,3 +126,7 @@ Only one session runs at a time. Starting another activity stops the current one
 - 2026-09-11 — Step 6, today. Tracked-vs-elapsed summary, per-activity bars, newest-first log;
   sessions crossing midnight are clipped. Sessions now draw as bands in the day ribbon, and the
   now-label moved below the line so it never covers the running band.
+- 2026-09-11 — Step 7, history. Day groups with range/activity filters, inline editor for
+  add/edit/delete; an end before the start means the next day; no sessions ending in the
+  future. Small elapsed readouts now always show hours (`0:22:05`) so they can't pass for
+  clock times.

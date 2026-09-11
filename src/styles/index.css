@@ -83,6 +83,47 @@ a {
   color: var(--bg);
 }
 
+/* A labelled form control: small mono label above the input. */
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.field-label {
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  color: var(--text-muted);
+}
+
+.field-hint {
+  color: var(--accent);
+}
+
+.input {
+  min-block-size: 2.25rem;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.input:hover {
+  border-color: var(--text-faint);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

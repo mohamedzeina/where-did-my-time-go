@@ -11,7 +11,7 @@ export function DocumentTitle({ viewLabel }: { viewLabel: string }) {
   const running = useRunningTimer()
   const elapsed = useElapsed(running?.session.start)
   const title = running
-    ? `${formatDuration(elapsed)} · ${running.activity.name}`
+    ? `${formatDuration(elapsed, { alwaysHours: true })} · ${running.activity.name}`
     : `${viewLabel} | where did my time go?`
 
   useEffect(() => {

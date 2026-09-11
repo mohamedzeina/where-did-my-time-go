@@ -52,7 +52,10 @@ export function TimerReadout({ running }: { running: RunningTimer | null }) {
   )
 }
 
-/** Live elapsed time for the running tile, e.g. `12:34`. */
+/**
+ * Live elapsed time for small readouts (running tile, session lists), always with hours
+ * (`0:12:34`) so it can't be mistaken for the clock times beside it.
+ */
 export function ElapsedText({ start }: { start: number }) {
-  return <>{formatDuration(useElapsed(start))}</>
+  return <>{formatDuration(useElapsed(start), { alwaysHours: true })}</>
 }
