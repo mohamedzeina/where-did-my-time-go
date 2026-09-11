@@ -60,7 +60,7 @@ Only one session runs at a time. Starting another activity stops the current one
       navigation between Timer / History / Insights (empty views).
       _Done when:_ you can move between the three views and the look feels like "the app".
 
-- [ ] **3. Data layer**
+- [x] **3. Data layer**
       Dexie database, Activity + Session tables, typed repository functions, unit tests for them.
       _Done when:_ tests cover create/read/update/delete and "start stops the running session".
 
@@ -113,3 +113,6 @@ Only one session runs at a time. Starting another activity stops the current one
 - 2026-09-11 — Step 1, project scaffold. Vite template now ships oxlint instead of ESLint, kept it.
 - 2026-09-11 — Step 2, design & app shell. Day ribbon, LED clock, instrument-panel layer, hash
   routing with 1/2/3 shortcuts. Dropped the light theme (too bright), CRT, HUD and pointer effects.
+- 2026-09-11 — Step 3, data layer. Dexie with a sparse `running` index so the open session is
+  one lookup. Unique names (case-insensitive); archiving stops a running timer; deleting an
+  activity deletes its sessions.
