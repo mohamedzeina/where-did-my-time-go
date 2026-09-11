@@ -19,11 +19,15 @@
   color: var(--text-muted);
 }
 
-/* The clock sits low and left, like a scoreboard, with the note tucked beneath it. */
+/* The clock leads, left-aligned like a scoreboard, with the activities beneath it. */
 .view-timer {
-  justify-content: center;
-  min-block-size: 100%;
-  padding-block-end: var(--space-8);
+  gap: var(--space-7);
+}
+
+.timer-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .readout {
@@ -71,7 +75,7 @@
 
 @media (max-width: 799px) {
   .view-timer {
-    padding-block-end: 0;
+    gap: var(--space-6);
   }
 
   .readout-frame {

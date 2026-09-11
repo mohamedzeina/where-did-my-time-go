@@ -29,6 +29,7 @@
   --grid: rgb(236 237 247 / 0.035);
   --focus: var(--sodium);
   --ok: #4fd1a1;
+  --danger: #ff8a8a;
 
   /* The light of a day, midnight to midnight */
   --sky: linear-gradient(

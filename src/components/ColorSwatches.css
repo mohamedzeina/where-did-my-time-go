@@ -1,0 +1,44 @@
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Each swatch's `color` is its palette color; the ring shows which one is picked. */
+.swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.swatch::before {
+  content: '';
+  inline-size: 14px;
+  block-size: 14px;
+  border-radius: 3px;
+  background: currentColor;
+}
+
+.swatch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.swatch:has(input:checked) {
+  box-shadow: 0 0 0 1.5px currentColor;
+}
+
+.swatch:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

@@ -41,6 +41,48 @@ a {
   outline-offset: 3px;
 }
 
+/* Small mono action, e.g. "Edit" or "Archive". `.is-primary` for the main action of a form. */
+.text-button {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  cursor: pointer;
+}
+
+.text-button:hover {
+  border-color: var(--text-faint);
+  color: var(--text);
+}
+
+.text-button[aria-pressed='true'] {
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+
+.text-button.is-primary {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+/* For actions that destroy data, always behind a confirmation. */
+.text-button.is-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.text-button.is-danger:hover {
+  background: var(--danger);
+  color: var(--bg);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

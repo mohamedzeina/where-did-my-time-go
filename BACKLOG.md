@@ -64,8 +64,9 @@ Only one session runs at a time. Starting another activity stops the current one
       Dexie database, Activity + Session tables, typed repository functions, unit tests for them.
       _Done when:_ tests cover create/read/update/delete and "start stops the running session".
 
-- [ ] **4. Activities**
+- [x] **4. Activities**
       Create, rename, recolor and archive activities. Seed a few defaults on first run.
+      Archived activities can be deleted (with their sessions) after a confirmation.
       _Done when:_ activities persist across reloads.
 
 - [ ] **5. Timer**
@@ -116,3 +117,6 @@ Only one session runs at a time. Starting another activity stops the current one
 - 2026-09-11 — Step 3, data layer. Dexie with a sparse `running` index so the open session is
   one lookup. Unique names (case-insensitive); archiving stops a running timer; deleting an
   activity deletes its sessions.
+- 2026-09-11 — Step 4, activities. Tiles under the clock with an edit mode; five starters seeded
+  on first run only. 8-color palette validated with the dataviz checker on Midnight (kept the
+  yellow slot; the "now" line got a midnight keyline instead). Delete lives behind archive.

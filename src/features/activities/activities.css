@@ -1,0 +1,188 @@
+.activities {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.activities-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block-end: var(--space-2);
+  border-block-end: 1px solid var(--line);
+}
+
+.activities-title {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.activities-empty {
+  color: var(--text-muted);
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(10rem, 100%), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * A tile is a channel strip: a bar of the activity's color down the left edge and its name.
+ * In edit mode it grows to hold the name field, color swatches and actions.
+ */
+.tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-block-size: 3.5rem;
+  block-size: 100%;
+  inline-size: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-3) calc(var(--space-4) + 4px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+}
+
+.tile::before {
+  content: '';
+  position: absolute;
+  inset-block: -1px;
+  inset-inline-start: -1px;
+  inline-size: 5px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: var(--tile-color, var(--line));
+}
+
+.tile-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.tile.is-editing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.tile-input {
+  inline-size: 100%;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+}
+
+.tile-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.tile-input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+}
+
+.tile-input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.tile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tile-error {
+  font-size: var(--step--1);
+  color: var(--danger);
+}
+
+.tile.is-editing > .text-button {
+  align-self: flex-start;
+}
+
+.tile-new {
+  justify-content: center;
+  gap: var(--space-2);
+  border-style: dashed;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.tile-new::before {
+  display: none;
+}
+
+.tile-new:hover {
+  border-color: var(--text-faint);
+  color: var(--text);
+}
+
+.archived {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-start: var(--space-3);
+}
+
+.archived-title {
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.archived-list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.archived-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  max-inline-size: 36rem;
+  padding: var(--space-2) 0;
+  border-block-end: 1px solid var(--line);
+}
+
+.archived-item::before {
+  content: '';
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 2px;
+  background: var(--tile-color);
+  opacity: 0.6;
+}
+
+.archived-name {
+  flex: 1;
+  min-inline-size: 12rem;
+  color: var(--text-muted);
+}
+
+.archived-item.is-confirming .archived-name {
+  color: var(--text);
+}
+
+.archived-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-inline-start: auto;
+}

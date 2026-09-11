@@ -3,6 +3,7 @@ import { createActivity, updateActivity } from './activities'
 import { db } from './db'
 import {
   addSession,
+  countSessions,
   deleteSession,
   getRunningSession,
   listSessions,
@@ -130,6 +131,17 @@ describe('deleteSession', () => {
     const session = await addSession({ activityId: gym.id, start: 0, end: 100 })
     await deleteSession(session.id)
     expect(await listSessions({ from: 0, to: 1000 })).toEqual([])
+  })
+})
+
+describe('countSessions', () => {
+  it("counts an activity's finished and running sessions", async () => {
+    await addSession({ activityId: gym.id, start: 0, end: 100 })
+    await addSession({ activityId: reading.id, start: 0, end: 100 })
+    await startSession(gym.id, 200)
+
+    expect(await countSessions(gym.id)).toBe(2)
+    expect(await countSessions(reading.id)).toBe(1)
   })
 })
 

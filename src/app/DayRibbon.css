@@ -67,7 +67,10 @@
   inset-block-start: calc(var(--progress) * 100%);
   block-size: 2px;
   background: var(--accent);
-  box-shadow: 0 0 12px var(--accent);
+  /* A midnight keyline keeps "now" readable over any activity band, even a yellow one. */
+  box-shadow:
+    0 0 0 1px var(--midnight),
+    0 0 12px var(--accent);
 }
 
 .ribbon-now-label {

@@ -126,3 +126,8 @@ export async function listSessions({ from, to, activityId }: SessionQuery): Prom
     .toArray()
   return rows.map(toSession)
 }
+
+/** How many sessions, running or finished, belong to an activity. */
+export async function countSessions(activityId: string): Promise<number> {
+  return db.sessions.where('activityId').equals(activityId).count()
+}
