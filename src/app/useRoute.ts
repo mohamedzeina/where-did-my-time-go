@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export const ROUTES = ['timer', 'history', 'insights'] as const
+export const ROUTES = ['timer', 'history', 'insights', 'data'] as const
 export type Route = (typeof ROUTES)[number]
 
 function readRoute(): Route {

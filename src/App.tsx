@@ -3,6 +3,7 @@ import { DayRibbon } from './app/DayRibbon'
 import { DocumentTitle } from './app/DocumentTitle'
 import { StatusBar } from './app/StatusBar'
 import { useRoute, useRouteShortcuts, type Route } from './app/useRoute'
+import { DataView } from './features/data/DataView'
 import { HistoryView } from './features/history/HistoryView'
 import { InsightsView } from './features/insights/InsightsView'
 import { TimerView } from './features/timer/TimerView'
@@ -12,6 +13,7 @@ const NAV: { route: Route; label: string; view: ComponentType }[] = [
   { route: 'timer', label: 'Timer', view: TimerView },
   { route: 'history', label: 'History', view: HistoryView },
   { route: 'insights', label: 'Insights', view: InsightsView },
+  { route: 'data', label: 'Data', view: DataView },
 ]
 
 function App() {

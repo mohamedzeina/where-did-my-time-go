@@ -88,7 +88,7 @@ Only one session runs at a time. Starting another activity stops the current one
       and a calendar heatmap of tracked time.
       _Done when:_ charts reflect real history and update after edits.
 
-- [ ] **9. Backup & export**
+- [x] **9. Backup & export**
       Export/import all data as JSON, export sessions as CSV. Browser storage can be cleared, so this
       is your safety net.
       _Done when:_ exporting, clearing data, and importing restores everything.
@@ -135,3 +135,6 @@ Only one session runs at a time. Starting another activity stops the current one
   bars, and stacked day/week columns with keyboard tooltips and table views; >8 activities
   fold into "Other". Fixes from review: durations under a minute show seconds, and the
   session editor keeps seconds (an equal end no longer becomes a 24-hour session).
+- 2026-09-11 — Step 9, backup & export. New Data view (key 4): JSON backup with last-backup
+  date, validated restore that previews and replaces all at once, CSV export (formula-safe,
+  Excel-friendly), persistent-storage request, and delete-everything behind a confirmation.

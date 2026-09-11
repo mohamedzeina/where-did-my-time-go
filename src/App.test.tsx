@@ -35,6 +35,9 @@ it('switches views with number keys', async () => {
   await user.keyboard('3')
   expect(await screen.findByRole('heading', { name: 'Insights' })).toBeInTheDocument()
 
+  await user.keyboard('4')
+  expect(await screen.findByRole('heading', { name: 'Data', level: 1 })).toBeInTheDocument()
+
   await user.keyboard('1')
   expect(await screen.findByRole('heading', { name: 'Timer' })).toBeInTheDocument()
 })
