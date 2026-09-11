@@ -110,6 +110,13 @@ Only one session runs at a time. Starting another activity stops the current one
       each goal was met in the range. Weeks start on Monday. Backups carry goals.
       _Done when:_ a goal set on an activity shows progress on its tile and in Insights.
 
+- [x] **13. Insights redesign & history paging**
+      Simplify Insights to one story per block (numbers → where it went → over time → goals →
+      the half-year heatmap), add a donut for the share per activity, and page History so a
+      long range doesn't render thousands of rows at once.
+      _Done when:_ Insights reads top to bottom without backtracking, and History stays fast
+      with years of sessions.
+
 ## Later / ideas
 
 - Limits as well as targets (e.g. Meetings at most 2h/day)
@@ -165,3 +172,10 @@ Only one session runs at a time. Starting another activity stops the current one
   Chromium's customizable select; the new-activity form takes its own row. A full-width
   console row layout was tried for the Timer list and dropped as too tall: the compact grid
   stays, the console stays for editing.
+- 2026-09-12 — Step 13, insights redesign & history paging. History renders 100 sessions at a
+  time with a "show more" (19,710 sessions went from 2.0 s and 128k DOM nodes to 0.7 s and
+  762). Insights lost the per-activity bars and "Longest session" for a donut and three stats,
+  the heatmap moved to the bottom on a validated green ramp, and "This month" left the range
+  list (a partial range skews the averages). The heatmap's table view went — History already
+  lists those days — and the day-by-day table stayed but now scrolls inside a 22rem panel with
+  a sticky header.

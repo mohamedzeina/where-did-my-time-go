@@ -53,6 +53,21 @@ export interface DayGroup {
   total: number
 }
 
+/**
+ * The first `limit` sessions across day groups, keeping each day's full total so a partly
+ * shown day still reports all of its time. Groups come in, trimmed groups come out.
+ */
+export function takeSessions(groups: DayGroup[], limit: number): DayGroup[] {
+  const shown: DayGroup[] = []
+  let left = limit
+  for (const group of groups) {
+    if (left <= 0) break
+    shown.push({ ...group, sessions: group.sessions.slice(0, left) })
+    left -= group.sessions.length
+  }
+  return shown
+}
+
 /** Groups sessions by the day they started, newest day and newest session first. */
 export function groupByDay(sessions: Session[], now: number): DayGroup[] {
   const groups = new Map<number, DayGroup>()

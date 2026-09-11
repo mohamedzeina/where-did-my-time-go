@@ -67,21 +67,16 @@ describe('InsightsView', () => {
     expect(document.querySelector('.chart-tooltip')).toHaveTextContent('4h 00m')
   })
 
-  it('offers every chart as a table', async () => {
+  it('offers the day-by-day chart as a table', async () => {
     const user = userEvent.setup()
     render(<InsightsView />)
 
-    const toggles = await screen.findAllByRole('button', { name: 'Show table' })
-    for (const toggle of toggles) await user.click(toggle)
+    await user.click(await screen.findByRole('button', { name: 'Show table' }))
 
-    const tables = screen.getAllByRole('table')
-    expect(tables).toHaveLength(2)
-    // Heatmap table: only days with tracked time.
-    expect(within(tables[0]).getAllByRole('row')).toHaveLength(2)
-    expect(within(tables[0]).getByText('4h 00m')).toBeInTheDocument()
-    // Daily table: one row per day plus the header, with a column per activity.
-    expect(within(tables[1]).getAllByRole('row')).toHaveLength(8)
-    expect(within(tables[1]).getByRole('columnheader', { name: 'Reading' })).toBeInTheDocument()
+    // One row per day plus the header, with a column per activity.
+    const daily = screen.getByRole('table', { name: 'Daily totals' })
+    expect(within(daily).getAllByRole('row')).toHaveLength(8)
+    expect(within(daily).getByRole('columnheader', { name: 'Reading' })).toBeInTheDocument()
   })
 
   it('shows how often each goal was met', async () => {
@@ -93,7 +88,7 @@ describe('InsightsView', () => {
     expect(row).toHaveTextContent('Reading')
     expect(row).toHaveTextContent('2h a day')
     // Yesterday's 3h meets it; the five days before miss it; today isn't over yet.
-    expect(row).toHaveTextContent('met 1 of 6 days')
+    expect(row).toHaveTextContent('met 1 of 6 days so far')
     expect(row.querySelectorAll('.goal-dot')).toHaveLength(7)
     expect(row.querySelectorAll('.goal-dot.is-met')).toHaveLength(1)
   })

@@ -6,9 +6,9 @@ import { RANGE_PRESETS, resolveRange, toDateInput, type RangePreset } from '../.
 import { addDays, endOfDay, startOfDay, totalsByActivity } from '../../lib/totals'
 import { useNow } from '../../lib/useNow'
 import { useStableLiveQuery } from '../../lib/useStableLiveQuery'
-import { ActivityBars } from './ActivityBars'
 import { CalendarHeatmap } from './CalendarHeatmap'
 import { DailyChart } from './DailyChart'
+import { DonutChart } from './DonutChart'
 import { GoalsSection } from './GoalsSection'
 import { seriesFor } from './series'
 import { StatTiles } from './StatTiles'
@@ -16,6 +16,9 @@ import '../views.css'
 import './insights.css'
 
 const HEATMAP_WEEKS = 26
+
+/** "This month" is a partial range that muddles averages here; History still offers it. */
+const INSIGHT_RANGES = RANGE_PRESETS.filter((option) => option.id !== 'this-month')
 
 /** Where the time went: a half-year heatmap, then headline numbers and charts for a range. */
 export function InsightsView() {
@@ -56,15 +59,6 @@ export function InsightsView() {
         Insights
       </h1>
 
-      <section className="insights-block" aria-labelledby="heatmap-title">
-        <div className="section-head">
-          <h2 id="heatmap-title" className="section-title">
-            Last {HEATMAP_WEEKS} weeks
-          </h2>
-        </div>
-        {heat.data && <CalendarHeatmap from={heatFrom} to={heatTo} totals={heat.data} />}
-      </section>
-
       <div className="filters insights-filters">
         <label className="field">
           <span className="field-label">Range</span>
@@ -73,7 +67,7 @@ export function InsightsView() {
             value={preset}
             onChange={(event) => setPreset(event.target.value as RangePreset)}
           >
-            {RANGE_PRESETS.map((option) => (
+            {INSIGHT_RANGES.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label}
               </option>
@@ -106,15 +100,7 @@ export function InsightsView() {
 
       {data && summary && (
         <div className={stale ? 'insights-range is-stale' : 'insights-range'}>
-          <StatTiles summary={summary} top={totals[0]} activities={data.activities} now={now} />
-
-          <GoalsSection
-            activities={data.activities}
-            sessions={data.sessions}
-            from={from}
-            to={range.to}
-            now={now}
-          />
+          <StatTiles summary={summary} top={totals[0]} activities={data.activities} />
 
           {summary.total === 0 ? (
             <p className="view-lede">
@@ -122,20 +108,23 @@ export function InsightsView() {
             </p>
           ) : (
             <>
-              <section className="insights-block" aria-labelledby="per-activity-title">
+              <section className="insights-block" aria-labelledby="where-title">
                 <div className="section-head">
-                  <h2 id="per-activity-title" className="section-title">
-                    Per activity
+                  <h2 id="where-title" className="section-title">
+                    Where it went
                   </h2>
                 </div>
-                <ActivityBars totals={totals} activities={data.activities} total={summary.total} />
+                <DonutChart totals={totals} activities={data.activities} total={summary.total} />
               </section>
 
               <section className="insights-block" aria-labelledby="over-time-title">
                 <div className="section-head">
                   <h2 id="over-time-title" className="section-title">
-                    {unit === 'week' ? 'Week by week' : 'Day by day'}
+                    Over time
                   </h2>
+                  <span className="insights-note">
+                    {unit === 'week' ? 'one column per week' : 'one column per day'}
+                  </span>
                 </div>
                 <DailyChart
                   buckets={buckets}
@@ -146,8 +135,26 @@ export function InsightsView() {
               </section>
             </>
           )}
+
+          <GoalsSection
+            activities={data.activities}
+            sessions={data.sessions}
+            from={from}
+            to={range.to}
+            now={now}
+          />
         </div>
       )}
+
+      <section className="insights-block" aria-labelledby="heatmap-title">
+        <div className="section-head">
+          <h2 id="heatmap-title" className="section-title">
+            Last {HEATMAP_WEEKS} weeks
+          </h2>
+          <span className="insights-note">always the last half year</span>
+        </div>
+        {heat.data && <CalendarHeatmap from={heatFrom} to={heatTo} totals={heat.data} />}
+      </section>
     </section>
   )
 }

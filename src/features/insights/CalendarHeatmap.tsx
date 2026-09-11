@@ -22,12 +22,11 @@ const longDate = new Intl.DateTimeFormat(undefined, {
 const ROW_LABELS = ['Mon', '', 'Wed', '', 'Fri', '', '']
 
 /**
- * Months at a glance: one cell per day, weeks as columns (Monday on top), shaded by hours
- * tracked on a single moonlight ramp so it never reads as any one activity.
+ * Months at a glance: one cell per day, weeks as columns (Monday on top), shaded green by
+ * hours tracked. History lists the same days with their totals, so nothing is chart-only.
  */
 export function CalendarHeatmap({ from, to, totals }: CalendarHeatmapProps) {
   const [active, setActive] = useState<number>()
-  const [asTable, setAsTable] = useState(false)
 
   const days: number[] = []
   for (let day = from; day < to; day = addDays(day, 1)) days.push(day)
@@ -53,99 +52,63 @@ export function CalendarHeatmap({ from, to, totals }: CalendarHeatmapProps) {
           <strong>{formatHoursMinutes(total)}</strong> over {trackedDays.length} tracked{' '}
           {trackedDays.length === 1 ? 'day' : 'days'}
         </p>
-        <button
-          type="button"
-          className="text-button"
-          aria-pressed={asTable}
-          onClick={() => setAsTable(!asTable)}
-        >
-          {asTable ? 'Show chart' : 'Show table'}
-        </button>
       </div>
 
-      {asTable ? (
-        <div className="chart-table-wrap">
-          <table className="chart-table">
-            <caption className="visually-hidden">Tracked time per day</caption>
-            <thead>
-              <tr>
-                <th scope="col">Day</th>
-                <th scope="col">Tracked</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trackedDays.length === 0 ? (
-                <tr>
-                  <td colSpan={2}>Nothing tracked in these weeks.</td>
-                </tr>
-              ) : (
-                [...trackedDays].reverse().map((day) => (
-                  <tr key={day}>
-                    <th scope="row">{longDate.format(day)}</th>
-                    <td>{formatHoursMinutes(totals.get(day) ?? 0)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      <div className="heatmap-frame" onPointerLeave={() => setActive(undefined)}>
+        <div
+          className="heatmap-months"
+          aria-hidden="true"
+          style={{ '--weeks': weeks } as CSSProperties}
+        >
+          {monthLabels.map((label, i) => (
+            <span key={i}>{label}</span>
+          ))}
         </div>
-      ) : (
-        <div className="heatmap-frame" onPointerLeave={() => setActive(undefined)}>
-          <div
-            className="heatmap-months"
-            aria-hidden="true"
-            style={{ '--weeks': weeks } as CSSProperties}
-          >
-            {monthLabels.map((label, i) => (
+        <div className="heatmap-body">
+          <div className="heatmap-rows" aria-hidden="true">
+            {ROW_LABELS.map((label, i) => (
               <span key={i}>{label}</span>
             ))}
           </div>
-          <div className="heatmap-body">
-            <div className="heatmap-rows" aria-hidden="true">
-              {ROW_LABELS.map((label, i) => (
-                <span key={i}>{label}</span>
-              ))}
-            </div>
-            <div
-              className="heatmap-grid"
-              role="img"
-              aria-label={`Tracked time per day over the last ${weeks} weeks: ${formatHoursMinutes(total)} over ${trackedDays.length} days. Use Show table to read each day.`}
-              style={{ '--weeks': weeks } as CSSProperties}
-            >
-              {days.map((day, i) => {
-                const ms = totals.get(day) ?? 0
-                return (
-                  <span
-                    key={day}
-                    className={active === i ? 'heat-cell is-active' : 'heat-cell'}
-                    data-level={heatLevel(ms)}
-                    onPointerEnter={() => setActive(i)}
-                  />
-                )
-              })}
-            </div>
-            {active !== undefined && (
-              <ChartTooltip
-                x={(Math.floor(active / 7) + 0.5) / weeks}
-                title={longDate.format(days[active])}
-                value={
-                  (totals.get(days[active]) ?? 0) > 0
-                    ? formatHoursMinutes(totals.get(days[active])!)
-                    : 'Nothing tracked'
-                }
-              />
-            )}
+          <div
+            className="heatmap-grid"
+            role="img"
+            aria-label={`Tracked time per day over the last ${weeks} weeks: ${formatHoursMinutes(total)} over ${trackedDays.length} days. History lists each day with its total.`}
+            style={{ '--weeks': weeks } as CSSProperties}
+          >
+            {days.map((day, i) => {
+              const ms = totals.get(day) ?? 0
+              return (
+                <span
+                  key={day}
+                  className={active === i ? 'heat-cell is-active' : 'heat-cell'}
+                  data-level={heatLevel(ms)}
+                  onPointerEnter={() => setActive(i)}
+                />
+              )
+            })}
           </div>
-          <ul className="heatmap-legend" aria-label="Shading">
-            {HEAT_LEVEL_LABELS.map((label, level) => (
-              <li key={label}>
-                <span className="heat-cell" data-level={level} />
-                {label}
-              </li>
-            ))}
-          </ul>
+          {active !== undefined && (
+            <ChartTooltip
+              x={(Math.floor(active / 7) + 0.5) / weeks}
+              title={longDate.format(days[active])}
+              value={
+                (totals.get(days[active]) ?? 0) > 0
+                  ? formatHoursMinutes(totals.get(days[active])!)
+                  : 'Nothing tracked'
+              }
+            />
+          )}
         </div>
-      )}
+        <ul className="heatmap-legend" aria-label="Shading">
+          {HEAT_LEVEL_LABELS.map((label, level) => (
+            <li key={label}>
+              <span className="heat-cell" data-level={level} />
+              {label}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }

@@ -9,6 +9,7 @@ import {
   groupByDay,
   RANGE_PRESETS,
   resolveRange,
+  takeSessions,
   toDateInput,
   type RangePreset,
 } from '../../lib/ranges'
@@ -18,6 +19,9 @@ import { ElapsedText } from '../timer/TimerReadout'
 import { SessionEditor } from './SessionEditor'
 import '../views.css'
 import './history.css'
+
+/** Sessions added to the page at a time, so a long range doesn't render thousands of rows. */
+const PAGE = 100
 
 /** Every session, grouped by day, with filters and in-place editing. */
 export function HistoryView() {
@@ -37,10 +41,18 @@ export function HistoryView() {
     return { sessions, activities }
   }, [from, to, activityFilter])
 
-  const groups = data ? groupByDay(data.sessions, now) : []
+  // Only the newest sessions are put on the page; the totals below still count them all.
+  // The limit is tied to the filters, so changing them starts from the top again.
+  const filters = `${from}:${to}:${activityFilter}`
+  const [page, setPage] = useState({ filters, limit: PAGE })
+  const limit = page.filters === filters ? page.limit : PAGE
+
+  const allGroups = data ? groupByDay(data.sessions, now) : []
+  const groups = takeSessions(allGroups, limit)
   const activityById = new Map(data?.activities.map((a) => [a.id, a]))
-  const total = groups.reduce((sum, g) => sum + g.total, 0)
+  const total = allGroups.reduce((sum, g) => sum + g.total, 0)
   const count = data?.sessions.length ?? 0
+  const shown = groups.reduce((sum, g) => sum + g.sessions.length, 0)
 
   return (
     <section className="view view-history" aria-labelledby="view-title">
@@ -166,6 +178,21 @@ export function HistoryView() {
           </ol>
         </section>
       ))}
+
+      {shown < count && (
+        <div className="history-more">
+          <p className="history-summary">
+            Showing {shown} of {count} sessions
+          </p>
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => setPage({ filters, limit: limit + PAGE })}
+          >
+            Show {Math.min(PAGE, count - shown)} more
+          </button>
+        </div>
+      )}
     </section>
   )
 }

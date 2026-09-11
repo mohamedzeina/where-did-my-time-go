@@ -43,6 +43,49 @@ describe('HistoryView', () => {
     expect(screen.getByText(/across 2 sessions/)).toBeInTheDocument()
   })
 
+  it('shows the newest 100 sessions, then more on request', async () => {
+    // 150 one-minute sessions through yesterday, newest last.
+    const yesterday = startOfDay(today - 12 * 60 * MIN)
+    for (let i = 0; i < 150; i++) {
+      await addSession({
+        activityId: gym.id,
+        start: yesterday + i * 2 * MIN,
+        end: yesterday + i * 2 * MIN + MIN,
+      })
+    }
+    const user = userEvent.setup()
+    render(<HistoryView />)
+
+    expect(await screen.findByText('Showing 100 of 150 sessions')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /^Edit Gym/ })).toHaveLength(100)
+    // The day total counts every session, not just the ones on the page.
+    expect(screen.getByText('2h 30m', { selector: '.history-day-total' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Show 50 more' }))
+
+    expect(await screen.findAllByRole('button', { name: /^Edit Gym/ })).toHaveLength(150)
+    expect(screen.queryByText(/Showing/)).not.toBeInTheDocument()
+  })
+
+  it('starts again from the top when the filters change', async () => {
+    const yesterday = startOfDay(today - 12 * 60 * MIN)
+    for (let i = 0; i < 120; i++) {
+      await addSession({
+        activityId: gym.id,
+        start: yesterday + i * 2 * MIN,
+        end: yesterday + i * 2 * MIN + MIN,
+      })
+    }
+    const user = userEvent.setup()
+    render(<HistoryView />)
+
+    await user.click(await screen.findByRole('button', { name: 'Show 20 more' }))
+    expect(await screen.findAllByRole('button', { name: /^Edit Gym/ })).toHaveLength(120)
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Range' }), 'Last 30 days')
+    expect(await screen.findByText('Showing 100 of 120 sessions')).toBeInTheDocument()
+  })
+
   it('filters by activity', async () => {
     await addSession({ activityId: gym.id, start: today, end: today + MIN })
     await addSession({ activityId: reading.id, start: today + 2 * MIN, end: today + 3 * MIN })

@@ -7,6 +7,7 @@ import {
   groupByDay,
   resolveRange,
   sessionTimesFromInputs,
+  takeSessions,
   toDateInput,
   toTimeInput,
 } from './ranges'
@@ -65,6 +66,36 @@ describe('groupByDay', () => {
       [at(10), ['c', 'b'], 150 * 60_000],
       [at(9), ['a'], 60 * 60_000],
     ])
+  })
+})
+
+describe('takeSessions', () => {
+  const groups = groupByDay(
+    [
+      session('a', at(11, 9), at(11, 10)),
+      session('b', at(11, 11), at(11, 12)),
+      session('c', at(10, 9), at(10, 10)),
+      session('d', at(10, 11), at(10, 12)),
+      session('e', at(9, 9), at(9, 10)),
+    ],
+    at(11, 15),
+  )
+
+  it('takes the newest sessions across days', () => {
+    expect(takeSessions(groups, 3).map((g) => g.sessions.map((s) => s.id))).toEqual([
+      ['b', 'a'],
+      ['d'],
+    ])
+  })
+
+  it('keeps each day total whole, even when the day is only partly shown', () => {
+    const [, yesterday] = takeSessions(groups, 3)
+    expect(yesterday.sessions).toHaveLength(1)
+    expect(yesterday.total).toBe(2 * 60 * 60_000)
+  })
+
+  it('returns everything when the limit is bigger than the list', () => {
+    expect(takeSessions(groups, 50)).toEqual(groups)
   })
 })
 

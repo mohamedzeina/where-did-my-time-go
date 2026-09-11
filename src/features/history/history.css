@@ -83,6 +83,19 @@
   color: var(--text);
 }
 
+.history-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block-start: var(--space-2);
+}
+
+.history-more .history-summary {
+  margin-inline-start: 0;
+  padding-block-end: 0;
+}
+
 /* The inline form for adding or editing a session. */
 .editor {
   display: grid;

@@ -55,9 +55,10 @@ export function GoalsSection({ activities, sessions, from, to, now }: GoalsSecti
                 {activity.name}
               </span>
               <span className="goal-target">{formatGoal(activity.goal)}</span>
+              {/* The current day or week only counts once met, so say "so far". */}
               <span className="goal-score">
                 met {record.metCount} of {record.countable} {unit}
-                {record.countable === 1 ? '' : 's'}
+                {record.countable === 1 ? '' : 's'} so far
               </span>
               {record.periods.length <= MAX_DOTS && (
                 <span className="goal-dots" aria-hidden="true">
@@ -67,7 +68,9 @@ export function GoalsSection({ activities, sessions, from, to, now }: GoalsSecti
                       className={
                         p.met ? 'goal-dot is-met' : p.current ? 'goal-dot is-current' : 'goal-dot'
                       }
-                      title={`${unit === 'week' ? 'Week of ' : ''}${dayName.format(p.start)}: ${formatHoursMinutes(p.done)}`}
+                      title={`${unit === 'week' ? 'Week of ' : ''}${dayName.format(p.start)}: ${formatHoursMinutes(p.done)}${
+                        p.current ? ' (still going)' : ''
+                      }`}
                     />
                   ))}
                 </span>
