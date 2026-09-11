@@ -1,0 +1,36 @@
+/* DSEG7 Classic by keshikan, SIL Open Font License 1.1 (see assets/fonts/DSEG-LICENSE.txt). */
+@font-face {
+  font-family: 'DSEG7 Classic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('../assets/fonts/DSEG7Classic-Bold.woff2') format('woff2');
+}
+
+/* Seven-segment readout, sized to the view it sits in so `0:00:00` always fits. */
+.clock {
+  font-family: var(--font-clock);
+  font-size: var(--step-clock);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.clock.is-idle {
+  color: var(--clock-idle);
+}
+
+.clock-digit {
+  position: relative;
+  display: inline-block;
+}
+
+/* Unlit segments: a faint 8 behind every digit, like a real LED panel. */
+.clock-digit::before {
+  content: '8';
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+}

@@ -1,0 +1,195 @@
+/*
+ * Desktop: the day ribbon runs down the left edge, a quiet rail holds the name and
+ * navigation, and the current view fills the rest over a plotting grid, with a live status
+ * bar along the bottom.
+ */
+.shell {
+  display: grid;
+  grid-template-columns: 76px 216px minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'ribbon brand stage'
+    'ribbon nav   stage';
+  height: 100dvh;
+}
+
+.shell-ribbon {
+  grid-area: ribbon;
+}
+
+.shell-brand {
+  grid-area: brand;
+  padding: var(--space-6) var(--space-5) 0;
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 800;
+  line-height: 0.92;
+  text-decoration: none;
+  text-wrap: balance;
+}
+
+.shell-cursor {
+  display: inline-block;
+  inline-size: 0.4em;
+  block-size: 0.1em;
+  margin-inline-start: 0.08em;
+  background: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell-cursor {
+    animation: shell-blink 1.1s steps(1) infinite;
+  }
+
+  @keyframes shell-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+.shell-nav {
+  grid-area: nav;
+  padding: var(--space-7) var(--space-5);
+}
+
+.shell-nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shell-nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: var(--space-1);
+  font-size: var(--step-1);
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.shell-nav a:hover {
+  color: var(--text);
+}
+
+.shell-nav a[aria-current='page'] {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.shell-nav a[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: calc(-1 * var(--space-5));
+  inset-block: 0.45em;
+  inline-size: 4px;
+  border-radius: 0 2px 2px 0;
+  background: var(--accent);
+}
+
+.shell-key {
+  display: grid;
+  place-items: center;
+  min-inline-size: 1.7em;
+  padding: 1px 4px;
+  border: 1px solid var(--line);
+  border-block-end-width: 2px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.shell-nav a[aria-current='page'] .shell-key {
+  border-color: var(--text-faint);
+  color: var(--text);
+}
+
+.shell-stage {
+  grid-area: stage;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  border-inline-start: 1px solid var(--line);
+}
+
+.shell-main {
+  flex: 1;
+  overflow-y: auto;
+  container-type: inline-size;
+  padding: var(--space-8) var(--space-7);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+}
+
+/*
+ * Mobile: name on top, the ribbon as a strip beneath it, the view in the middle and
+ * navigation as a bottom bar within thumb reach.
+ */
+@media (max-width: 799px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      'brand'
+      'ribbon'
+      'stage'
+      'nav';
+  }
+
+  .shell-brand {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--step-2);
+  }
+
+  .shell-stage {
+    border-inline-start: 0;
+  }
+
+  .shell-main {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .shell-nav {
+    padding: 0;
+    border-block-start: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .shell-nav ul {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .shell-nav li {
+    flex: 1;
+  }
+
+  .shell-nav a {
+    justify-content: center;
+    padding-block: var(--space-4);
+    font-size: var(--step-0);
+  }
+
+  .shell-nav a[aria-current='page']::before {
+    inset-block: 0 auto;
+    inset-inline: 30%;
+    inline-size: auto;
+    block-size: 3px;
+    border-radius: 0 0 2px 2px;
+  }
+
+  .shell-key {
+    display: none;
+  }
+}

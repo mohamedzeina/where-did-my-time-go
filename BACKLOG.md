@@ -22,6 +22,25 @@ persistent history with charts of what you've done.
 | Styling     | Plain CSS with design tokens | Full control over a distinctive look                 |
 | Tests       | Vitest + Testing Library     | Native to Vite                                       |
 
+## Design direction
+
+Your day as a 24-hour ribbon. The ribbon runs down the left edge (across the top on phones),
+shades the part of today that's already gone, and marks now with a sodium-lamp amber line.
+Tracked sessions will fill it in as colored bands, so untracked time is visibly "where it went".
+
+- **Palette (dark only):** Midnight `#12163a`, Dusk `#1f2452`, Moonlight `#ecedf7`, Haze
+  `#9aa0c6`, Sodium `#ffb23e`. A light theme was built and dropped as too bright.
+- **Type:** DSEG7 (seven-segment LED, unlit segments faintly visible) for the clock; Big
+  Shoulders (tall, condensed) for the name and headings; Martian Mono for readouts and small
+  data; Schibsted Grotesk for everything else.
+- **Techy layer:** read like an instrument panel. Faint plotting grid behind views, viewfinder
+  corners around the clock, a live status bar (seconds, day of year, % of today gone, UTC
+  offset), mono key hints with number-key shortcuts, and a blinking cursor after the name.
+  Tried and rejected: CRT scanlines/glow, HUD rulers and grid crosshairs, pointer crosshair.
+- **Principles:** the ribbon and the giant clock are the loud parts, everything else stays quiet.
+  One load animation (the day pours into the ribbon), no decorative motion elsewhere.
+- Tokens live in `src/styles/tokens.css`.
+
 ## Data model
 
 - **Activity**: `id`, `name`, `color`, `archived`, `createdAt`
@@ -36,8 +55,8 @@ Only one session runs at a time. Starting another activity stops the current one
       Vite + React + TS, oxlint/Prettier, Vitest, folder structure, `.gitignore`, README run instructions.
       _Done when:_ `npm run dev` shows a placeholder page and `npm test` passes.
 
-- [ ] **2. Design direction & app shell**
-      Pick the visual identity (type, color, tone), set up design tokens, light/dark theme, and
+- [x] **2. Design direction & app shell**
+      Pick the visual identity (type, color, tone), set up design tokens (dark only), and
       navigation between Timer / History / Insights (empty views).
       _Done when:_ you can move between the three views and the look feels like "the app".
 
@@ -92,3 +111,5 @@ Only one session runs at a time. Starting another activity stops the current one
 <!-- One line per completed step: date, step, notes. -->
 
 - 2026-09-11 — Step 1, project scaffold. Vite template now ships oxlint instead of ESLint, kept it.
+- 2026-09-11 — Step 2, design & app shell. Day ribbon, LED clock, instrument-panel layer, hash
+  routing with 1/2/3 shortcuts. Dropped the light theme (too bright), CRT, HUD and pointer effects.

@@ -1,0 +1,81 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-inline-size: 72rem;
+}
+
+.view-title {
+  font-family: var(--font-display);
+  font-size: var(--step-4);
+  font-weight: 800;
+  line-height: 0.95;
+}
+
+.view-lede {
+  max-inline-size: 38ch;
+  font-size: var(--step-1);
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* The clock sits low and left, like a scoreboard, with the note tucked beneath it. */
+.view-timer {
+  justify-content: center;
+  min-block-size: 100%;
+  padding-block-end: var(--space-8);
+}
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.readout-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  color: var(--text-muted);
+}
+
+.readout-dot {
+  inline-size: 7px;
+  block-size: 7px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+/* Viewfinder corners around the clock, drawn as eight short background strokes. */
+.readout-frame {
+  --corner: var(--text-faint);
+  --arm: 18px;
+  --stroke: 2px;
+  padding: var(--space-4) var(--space-5);
+  background:
+    linear-gradient(var(--corner) 0 0) top left / var(--arm) var(--stroke),
+    linear-gradient(var(--corner) 0 0) top left / var(--stroke) var(--arm),
+    linear-gradient(var(--corner) 0 0) top right / var(--arm) var(--stroke),
+    linear-gradient(var(--corner) 0 0) top right / var(--stroke) var(--arm),
+    linear-gradient(var(--corner) 0 0) bottom left / var(--arm) var(--stroke),
+    linear-gradient(var(--corner) 0 0) bottom left / var(--stroke) var(--arm),
+    linear-gradient(var(--corner) 0 0) bottom right / var(--arm) var(--stroke),
+    linear-gradient(var(--corner) 0 0) bottom right / var(--stroke) var(--arm);
+  background-repeat: no-repeat;
+}
+
+@media (max-width: 799px) {
+  .view-timer {
+    padding-block-end: 0;
+  }
+
+  .readout-frame {
+    --arm: 12px;
+    padding: var(--space-3) var(--space-3);
+  }
+}

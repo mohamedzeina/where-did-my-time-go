@@ -1,0 +1,76 @@
+/*
+ * Design tokens.
+ *
+ * Concept: your day as a 24-hour ribbon, read like an instrument panel at night. A deep
+ * indigo lit by sodium-lamp amber, with readouts in a mono face over a faint plotting grid.
+ * The app is dark only.
+ */
+:root {
+  /* Base palette */
+  --midnight: #12163a;
+  --dusk: #1f2452;
+  --moonlight: #ecedf7;
+  --haze: #9aa0c6;
+  --sodium: #ffb23e;
+
+  color-scheme: dark;
+
+  /* Semantic colors */
+  --bg: var(--midnight);
+  --surface: var(--dusk);
+  --text: var(--moonlight);
+  --text-muted: var(--haze);
+  --text-faint: #3a4079;
+  --clock-idle: #4a5196;
+  --line: #2c326a;
+  --accent: var(--sodium);
+  --on-accent: var(--midnight);
+  --spent: rgb(236 237 247 / 0.07);
+  --grid: rgb(236 237 247 / 0.035);
+  --focus: var(--sodium);
+  --ok: #4fd1a1;
+
+  /* The light of a day, midnight to midnight */
+  --sky: linear-gradient(
+    var(--sky-direction, to bottom),
+    #1b1f4a 0%,
+    #5b4a8c 20%,
+    #f0a88a 27%,
+    #9fd0f0 35%,
+    #bfe3ff 55%,
+    #f2c46b 72%,
+    #d9678a 80%,
+    #4a3d86 88%,
+    #1b1f4a 100%
+  );
+
+  /* Type */
+  --font-display: 'Big Shoulders Variable', 'Arial Narrow', sans-serif;
+  --font-ui: 'Schibsted Grotesk Variable', system-ui, sans-serif;
+  --font-mono: 'Martian Mono Variable', ui-monospace, monospace;
+  --font-clock: 'DSEG7 Classic', var(--font-mono);
+
+  --step-mono: 0.6875rem;
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.75rem;
+  --step-3: 2.5rem;
+  --step-4: clamp(3rem, 7vw, 4.5rem);
+  /* Relative to the main view's width (it is a size container), so the clock never overflows. */
+  --step-clock: clamp(2.75rem, 20cqi, 10rem);
+
+  /* Space */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  --radius-sm: 4px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}

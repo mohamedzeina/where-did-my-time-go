@@ -1,0 +1,199 @@
+/*
+ * Vertical by default (midnight at the top, running down the left edge of the app).
+ * Below 800px it turns horizontal and runs across the top.
+ */
+.ribbon {
+  --sky-direction: to bottom;
+  position: relative;
+  display: flex;
+  height: 100%;
+  padding-block: var(--space-4);
+  overflow: hidden;
+  background: var(--surface);
+  border-inline-end: 1px solid var(--line);
+}
+
+.ribbon-sky {
+  flex: none;
+  inline-size: 4px;
+  background: var(--sky);
+}
+
+.ribbon-track {
+  position: relative;
+  flex: 1;
+}
+
+.ribbon-spent {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: calc(var(--progress) * 100%);
+  background:
+    repeating-linear-gradient(-45deg, var(--spent) 0 2px, transparent 2px 7px), var(--spent);
+  transform-origin: top;
+}
+
+.ribbon-hour {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: calc(var(--at) * 100%);
+  inline-size: 6px;
+  block-size: 1px;
+  background: var(--line);
+}
+
+.ribbon-hour.is-labelled {
+  inline-size: 10px;
+  background: var(--text-faint);
+}
+
+.ribbon-hour-label {
+  position: absolute;
+  inset-inline-start: 16px;
+  inset-block-start: 0;
+  translate: 0 -50%;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+.ribbon-now {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(var(--progress) * 100%);
+  block-size: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.ribbon-now-label {
+  position: absolute;
+  inset-inline-end: 4px;
+  inset-block-end: 4px;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+/* Keep the label inside the ribbon near midnight. */
+.ribbon.is-early .ribbon-now-label {
+  inset-block-end: auto;
+  inset-block-start: 4px;
+}
+
+/* The one orchestrated moment: on load, the day so far pours in from midnight to now. */
+@media (prefers-reduced-motion: no-preference) {
+  .ribbon-spent {
+    animation: ribbon-pour 1.1s var(--ease-out) both;
+  }
+
+  .ribbon-now {
+    animation: ribbon-now-in 1.1s var(--ease-out) both;
+  }
+
+  @keyframes ribbon-pour {
+    from {
+      transform: scaleY(0);
+    }
+  }
+
+  @keyframes ribbon-now-in {
+    from {
+      inset-block-start: 0;
+    }
+  }
+}
+
+@media (max-width: 799px) {
+  .ribbon {
+    --sky-direction: to right;
+    flex-direction: column;
+    height: 44px;
+    padding-block: 0;
+    border-inline-end: 0;
+    border-block-end: 1px solid var(--line);
+  }
+
+  .ribbon-sky {
+    order: 1;
+    inline-size: auto;
+    block-size: 3px;
+  }
+
+  .ribbon-spent {
+    inset-block: 0;
+    block-size: auto;
+    inline-size: calc(var(--progress) * 100%);
+    transform-origin: left;
+  }
+
+  .ribbon-hour,
+  .ribbon-hour.is-labelled {
+    inset-block-start: auto;
+    inset-block-end: 0;
+    inset-inline-start: calc(var(--at) * 100%);
+    inline-size: 1px;
+    block-size: 5px;
+  }
+
+  .ribbon-hour.is-labelled {
+    block-size: 8px;
+  }
+
+  .ribbon-hour-label {
+    display: none;
+  }
+
+  .ribbon-hour[data-major] .ribbon-hour-label {
+    display: block;
+    inset-inline-start: 4px;
+    inset-block-start: auto;
+    inset-block-end: 10px;
+    translate: none;
+  }
+
+  .ribbon-now {
+    inset-block: 0;
+    inset-inline: auto;
+    inset-inline-start: calc(var(--progress) * 100%);
+    inline-size: 2px;
+    block-size: auto;
+  }
+
+  .ribbon-now-label {
+    inset-inline-end: auto;
+    inset-inline-start: 5px;
+    inset-block-end: auto;
+    inset-block-start: 5px;
+  }
+
+  .ribbon.is-late .ribbon-now-label {
+    inset-inline-start: auto;
+    inset-inline-end: 5px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes ribbon-pour {
+      from {
+        transform: scaleX(0);
+      }
+    }
+
+    @keyframes ribbon-now-in {
+      from {
+        inset-inline-start: 0;
+      }
+    }
+  }
+}
