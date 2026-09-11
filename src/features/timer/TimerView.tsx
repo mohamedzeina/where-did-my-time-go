@@ -1,4 +1,5 @@
 import { ActivitiesPanel } from '../activities/ActivitiesPanel'
+import { TodayPanel } from '../today/TodayPanel'
 import { TimerReadout } from './TimerReadout'
 import { useRunningTimer } from './useRunningTimer'
 import '../views.css'
@@ -14,6 +15,7 @@ export function TimerView() {
       </h1>
       {running !== undefined && <TimerReadout running={running} />}
       <ActivitiesPanel running={running ?? null} />
+      <TodayPanel />
     </section>
   )
 }

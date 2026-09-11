@@ -61,6 +61,20 @@
   color: var(--text-muted);
 }
 
+/*
+ * A tracked session. Bands sit in a lane right of the hour labels; a surface-colored edge
+ * keeps back-to-back sessions visibly separate.
+ */
+.ribbon-band {
+  position: absolute;
+  inset-inline: 38px 8px;
+  inset-block-start: calc(var(--from) * 100%);
+  block-size: max(3px, calc((var(--to) - var(--from)) * 100%));
+  border-block: 1px solid var(--surface);
+  border-radius: 3px;
+  background: var(--band-color, var(--text-faint));
+}
+
 .ribbon-now {
   position: absolute;
   inset-inline: 0;
@@ -73,10 +87,11 @@
     0 0 12px var(--accent);
 }
 
+/* Below the line, in the part of the day still to come, so it never covers a tracked band. */
 .ribbon-now-label {
   position: absolute;
   inset-inline-end: 4px;
-  inset-block-end: 4px;
+  inset-block-start: 5px;
   padding: 1px 5px;
   border-radius: var(--radius-sm);
   background: var(--accent);
@@ -89,10 +104,10 @@
   line-height: 1.2;
 }
 
-/* Keep the label inside the ribbon near midnight. */
-.ribbon.is-early .ribbon-now-label {
-  inset-block-end: auto;
-  inset-block-start: 4px;
+/* Near midnight there's no room below, so it goes above the line instead. */
+.ribbon.is-late .ribbon-now-label {
+  inset-block-start: auto;
+  inset-block-end: 5px;
 }
 
 /* The one orchestrated moment: on load, the day so far pours in from midnight to now. */
@@ -166,6 +181,16 @@
     translate: none;
   }
 
+  .ribbon-band {
+    inset-block: 4px auto;
+    inset-inline: auto;
+    inset-inline-start: calc(var(--from) * 100%);
+    inline-size: max(3px, calc((var(--to) - var(--from)) * 100%));
+    block-size: 11px;
+    border-block: 0;
+    border-inline: 1px solid var(--surface);
+  }
+
   .ribbon-now {
     inset-block: 0;
     inset-inline: auto;
@@ -184,6 +209,8 @@
   .ribbon.is-late .ribbon-now-label {
     inset-inline-start: auto;
     inset-inline-end: 5px;
+    inset-block-start: 5px;
+    inset-block-end: auto;
   }
 
   @media (prefers-reduced-motion: no-preference) {

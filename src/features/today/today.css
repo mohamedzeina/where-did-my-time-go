@@ -1,0 +1,132 @@
+.today {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.today-summary {
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.today-summary strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.today-empty {
+  color: var(--text-muted);
+}
+
+/* Totals and the session log side by side when there's room, stacked when there isn't. */
+.today-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: var(--space-5) var(--space-7);
+  align-items: start;
+}
+
+.today-totals,
+.today-sessions {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.today-totals {
+  gap: var(--space-3);
+}
+
+/* One row per activity: name, a thin bar scaled to the day's largest total, and the time. */
+.total {
+  display: grid;
+  grid-template-columns: minmax(0, 8rem) 1fr 4.75rem;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.total-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.total-track {
+  display: block;
+}
+
+.total-bar {
+  display: block;
+  inline-size: max(3px, calc(var(--share) * 100%));
+  block-size: 8px;
+  border-radius: 0 4px 4px 0;
+  background: var(--tile-color, var(--text-faint));
+}
+
+.total-time,
+.session-time,
+.session-duration {
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.total-time {
+  text-align: end;
+  color: var(--text);
+}
+
+/* The log: newest first, one hairline-separated row per session. */
+.session {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-2);
+  border-block-end: 1px solid var(--line);
+}
+
+.session:first-child {
+  padding-block-start: 0;
+}
+
+.session-time {
+  color: var(--text-muted);
+}
+
+.session-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-name::before {
+  content: '';
+  flex: none;
+  inline-size: 3px;
+  block-size: 1em;
+  border-radius: 2px;
+  background: var(--tile-color, var(--text-faint));
+}
+
+.session-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  color: var(--text);
+}
+
+.session.is-running .session-time {
+  color: var(--text);
+}

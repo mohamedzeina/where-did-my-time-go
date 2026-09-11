@@ -1,26 +1,47 @@
 import type { CSSProperties } from 'react'
+import { useToday } from '../features/today/useToday'
 import { dayProgress, formatClock } from '../lib/day'
+import { clipSession, formatHoursMinutes } from '../lib/totals'
 import { useNow } from '../lib/useNow'
 import './DayRibbon.css'
 
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour)
+const DAY_MS = 24 * 60 * 60 * 1000
 
 /**
- * Today as a 24-hour ribbon: the part of the day already gone is shaded, and a line marks now.
- * Tracked sessions will be drawn into it as colored bands.
+ * Today as a 24-hour ribbon: the part of the day already gone is shaded, tracked sessions are
+ * bands in their activity's color, and a line marks now. Untracked shading is, quite
+ * literally, where the time went.
  */
 export function DayRibbon() {
   const now = useNow(15_000)
+  const today = useToday(15_000)
   const progress = dayProgress(now)
   const clock = formatClock(now)
 
+  const bands = (today?.sessions ?? []).flatMap((session) => {
+    const part = clipSession(session, today!.from, today!.to, now.getTime())
+    if (!part) return []
+    const activity = today!.activities.get(session.activityId)
+    return [
+      {
+        id: session.id,
+        from: (part.start - today!.from) / DAY_MS,
+        to: (part.end - today!.from) / DAY_MS,
+        color: activity?.color,
+        label: `${activity?.name ?? 'Deleted activity'}, ${formatClock(new Date(part.start))}–${
+          session.end === null ? 'now' : formatClock(new Date(part.end))
+        }`,
+      },
+    ]
+  })
+  const tracked = bands.reduce((sum, band) => sum + (band.to - band.from) * DAY_MS, 0)
+
   return (
     <div
-      className={['ribbon', progress < 0.06 && 'is-early', progress > 0.9 && 'is-late']
-        .filter(Boolean)
-        .join(' ')}
+      className={progress > 0.9 ? 'ribbon is-late' : 'ribbon'}
       role="img"
-      aria-label={`Today at ${clock}. ${Math.round(progress * 100)}% of the day has passed.`}
+      aria-label={`Today at ${clock}. ${Math.round(progress * 100)}% of the day has passed, ${formatHoursMinutes(tracked)} tracked.`}
       style={{ '--progress': progress } as CSSProperties}
     >
       <div className="ribbon-sky" />
@@ -37,6 +58,20 @@ export function DayRibbon() {
               <span className="ribbon-hour-label">{String(hour).padStart(2, '0')}</span>
             )}
           </span>
+        ))}
+        {bands.map((band) => (
+          <span
+            key={band.id}
+            className="ribbon-band"
+            title={band.label}
+            style={
+              {
+                '--from': band.from,
+                '--to': band.to,
+                '--band-color': band.color,
+              } as CSSProperties
+            }
+          />
         ))}
         <div className="ribbon-now">
           <span className="ribbon-now-label">{clock}</span>

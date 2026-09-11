@@ -75,7 +75,10 @@ describe('TimerView', () => {
     await startSession(reading.id, Date.now() - 65_000)
     render(<TimerView />)
 
-    expect(await screen.findByText(/^01:0[56]$/)).toBeInTheDocument()
+    // The big clock's readable text (the tile and today's log show the same time).
+    expect(
+      await screen.findByText(/^01:0[56]$/, { selector: '.clock .visually-hidden' }),
+    ).toBeInTheDocument()
     expect(screen.getByText('Reading', { selector: 'strong' })).toBeInTheDocument()
   })
 })

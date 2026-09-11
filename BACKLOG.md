@@ -74,7 +74,7 @@ Only one session runs at a time. Starting another activity stops the current one
       running time shown in the browser tab title.
       _Done when:_ you can time something, close the tab, reopen it, and it's still counting.
 
-- [ ] **6. Today**
+- [x] **6. Today**
       Under the timer: today's sessions and a per-activity total for the day.
       _Done when:_ stopping a timer immediately shows up in today's list.
 
@@ -123,3 +123,6 @@ Only one session runs at a time. Starting another activity stops the current one
 - 2026-09-11 — Step 5, timer. Tiles start/switch/stop; LED lights in the activity color; tab
   title shows the running time. Ticks are aligned to whole seconds from the session start, and
   only the clock, running tile and title re-render each second.
+- 2026-09-11 — Step 6, today. Tracked-vs-elapsed summary, per-activity bars, newest-first log;
+  sessions crossing midnight are clipped. Sessions now draw as bands in the day ribbon, and the
+  now-label moved below the line so it never covers the running band.

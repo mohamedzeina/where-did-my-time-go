@@ -20,8 +20,8 @@ export function ActivitiesPanel({ running }: { running: RunningTimer | null }) {
 
   return (
     <section className="activities" aria-labelledby="activities-title">
-      <div className="activities-head">
-        <h2 id="activities-title" className="activities-title">
+      <div className="section-head">
+        <h2 id="activities-title" className="section-title">
           Activities
         </h2>
         <button
