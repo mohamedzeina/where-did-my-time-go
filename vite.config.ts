@@ -4,6 +4,13 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  server: {
+    // Plain old port 3000, not whatever Vite picks in the 5170s.
+    port: 3000,
+  },
+  preview: {
+    port: 3000,
+  },
   plugins: [
     react(),
     // Installable, and fully usable offline: every built file is precached, and the data

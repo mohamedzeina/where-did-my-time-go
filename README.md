@@ -51,7 +51,7 @@ npm install
 npm run dev
 ```
 
-Then open the URL Vite prints (usually http://localhost:5173).
+Then open http://localhost:3000.
 
 ## Scripts
 
