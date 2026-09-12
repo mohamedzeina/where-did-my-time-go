@@ -35,11 +35,20 @@ See [BACKLOG.md](BACKLOG.md) for how it was built, step by step, and the design 
 | `←` / `→` | Move between columns in the day-by-day chart |
 | `Esc`     | Cancel an edit                               |
 
-### Install and offline use
+### Install it as an app
 
-In a production build (`npm run build && npm run preview`, or any static host), the app is an
-installable web app: use your browser's **Install** option to give it its own window and
-icon. Every file it needs is cached on first load, so it keeps working with no connection.
+The app is published at **https://mohamedzeina.github.io/where-did-my-time-go/**. Open it in
+Chrome or Edge and use the **Install** button in the address bar: it gets its own window and
+icon, and you can right-click that icon to pin it to the taskbar.
+
+Only the files are hosted — there's no server and no account, and nothing you track is sent
+anywhere. Every file is cached on first load, so once it's installed it opens and works with
+no connection at all. Pushing to `main` rebuilds and republishes it, and the installed app
+picks up the new version the next time you open it.
+
+Because browsers file storage under the site it came from, sessions tracked at
+`localhost:3000` don't follow the installed app. Download a backup from the **Data** view
+first and restore it afterwards.
 
 ### Away detection
 
@@ -71,6 +80,10 @@ npm run dev
 ```
 
 Then open http://localhost:3000.
+
+`npm run preview` serves the production build instead, at
+http://localhost:3000/where-did-my-time-go/ — the same subfolder it's published under, so it
+catches anything that only breaks once the app isn't at the root.
 
 ## Scripts
 

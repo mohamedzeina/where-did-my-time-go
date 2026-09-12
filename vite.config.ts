@@ -3,7 +3,16 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default defineConfig({
+/**
+ * Where the built app lives on GitHub Pages. A project site is served from a subfolder, so
+ * every built URL — assets, the manifest, the service worker's scope — has to be prefixed
+ * with it. Dev stays at the root, so `npm run dev` is just localhost:3000; `npm run preview`
+ * serves the real build, prefix and all.
+ */
+const BASE = '/where-did-my-time-go/'
+
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? BASE : '/',
   server: {
     // Plain old port 3000, not whatever Vite picks in the 5170s.
     port: 3000,
@@ -22,8 +31,9 @@ export default defineConfig({
         name: 'where did my time go?',
         short_name: 'Time',
         description: 'A timer that tracks where your time goes, with history and charts.',
-        start_url: '/',
-        scope: '/',
+        id: BASE,
+        start_url: BASE,
+        scope: BASE,
         display: 'standalone',
         orientation: 'any',
         background_color: '#12163a',
@@ -37,7 +47,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        navigateFallback: '/index.html',
+        navigateFallback: `${BASE}index.html`,
       },
     }),
   ],
@@ -46,4 +56,4 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: false,
   },
-})
+}))
