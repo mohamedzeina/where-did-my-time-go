@@ -8,6 +8,7 @@ import {
   getRunningSession,
   listSessions,
   MIN_SESSION_MS,
+  resolveGap,
   startSession,
   stopSession,
   updateSession,
@@ -185,5 +186,77 @@ describe('listSessions', () => {
     const mine = await addSession({ activityId: reading.id, start: 0, end: 100 })
 
     expect(await listSessions({ from: 0, to: 1000, activityId: reading.id })).toEqual([mine])
+  })
+})
+
+describe('resolveGap', () => {
+  const START = 1_000_000
+  const LEFT = START + 30 * 60_000
+  const BACK = LEFT + 90 * 60_000
+
+  it('trims the away time out and picks the activity back up', async () => {
+    const running = await startSession(gym.id, START)
+
+    const { kept, resumed } = await resolveGap(running.id, LEFT, 'trim', BACK)
+
+    expect(kept).toEqual({ ...running, end: LEFT })
+    expect(resumed).toMatchObject({ activityId: gym.id, start: BACK, end: null })
+    expect(await getRunningSession()).toEqual(resumed)
+    expect(await listSessions({ from: 0, to: Infinity })).toHaveLength(2)
+  })
+
+  it('stops at the moment you left, leaving nothing running', async () => {
+    const running = await startSession(gym.id, START)
+
+    const { kept, resumed } = await resolveGap(running.id, LEFT, 'stop', BACK)
+
+    expect(kept).toEqual({ ...running, end: LEFT })
+    expect(resumed).toBeUndefined()
+    expect(await getRunningSession()).toBeUndefined()
+  })
+
+  it('drops a session that was barely started before the gap', async () => {
+    const running = await startSession(gym.id, START)
+
+    const { kept, resumed } = await resolveGap(running.id, START + MIN_SESSION_MS - 1, 'trim', BACK)
+
+    expect(kept).toBeUndefined()
+    expect(resumed).toMatchObject({ activityId: gym.id, start: BACK })
+    expect(await listSessions({ from: 0, to: Infinity })).toEqual([resumed])
+  })
+
+  it('never ends a session before it began', async () => {
+    const running = await startSession(gym.id, START)
+
+    const { resumed } = await resolveGap(running.id, START - 3_600_000, 'trim', BACK)
+
+    expect(await listSessions({ from: 0, to: Infinity })).toEqual([resumed])
+  })
+
+  it('does nothing once the session has been stopped elsewhere', async () => {
+    const running = await startSession(gym.id, START)
+    await stopSession(LEFT)
+
+    expect(await resolveGap(running.id, LEFT, 'trim', BACK)).toEqual({})
+    expect(await getRunningSession()).toBeUndefined()
+    expect(await listSessions({ from: 0, to: Infinity })).toEqual([{ ...running, end: LEFT }])
+  })
+
+  it('does nothing for a session that no longer exists', async () => {
+    expect(await resolveGap('gone', LEFT, 'stop', BACK)).toEqual({})
+  })
+
+  it('keeps the trimmed session but resumes nothing when the activity was archived', async () => {
+    const running = await startSession(gym.id, START)
+    await updateActivity(gym.id, { archived: true })
+    // Archiving stopped it; put it back as it would be had the archiving happened while the
+    // question was on screen.
+    await db.sessions.put({ ...running, running: 1 })
+
+    const { kept, resumed } = await resolveGap(running.id, LEFT, 'trim', BACK)
+
+    expect(kept).toEqual({ ...running, end: LEFT })
+    expect(resumed).toBeUndefined()
+    expect(await getRunningSession()).toBeUndefined()
   })
 })

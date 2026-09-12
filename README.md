@@ -11,6 +11,11 @@ See [BACKLOG.md](BACKLOG.md) for how it was built, step by step, and the design 
   running timer is saved as it goes, so it keeps counting through reloads and restarts.
   Sessions under 10 seconds aren't kept, and switching within 10 seconds just corrects the
   activity, so mis-taps leave nothing behind.
+- **Away time:** a timer left running while you're gone counts time you didn't spend. When
+  the app comes back from a stretch it wasn't watching — the PC slept, the browser was closed,
+  or (if you switch it on) you walked away and the machine went idle — it says how long and
+  offers to trim that time out, stop the session where you left, or keep it. It never changes
+  a session on its own, so ignoring the question keeps the time as tracked.
 - **Goals:** give any activity a daily or weekly time goal. Its tile fills up toward it as
   you go, and Insights shows how often you've met it.
 - **Today:** tracked time against the day so far, a total per activity, and today's sessions.
@@ -35,6 +40,20 @@ See [BACKLOG.md](BACKLOG.md) for how it was built, step by step, and the design 
 In a production build (`npm run build && npm run preview`, or any static host), the app is an
 installable web app: use your browser's **Install** option to give it its own window and
 icon. Every file it needs is cached on first load, so it keeps working with no connection.
+
+### Away detection
+
+Time when the app wasn't running at all is always noticed: it stamps the clock while a timer
+runs, and a hole in the stamps is a stretch nobody watched.
+
+Catching the other case — you leave the desk but the PC and browser stay up — needs the
+browser to tell the app whether the machine itself is idle or locked. That's a permission, and
+only Chromium browsers (Chrome, Edge) offer it, so it's off until you turn on **Away
+detection** in the **Data** view. Without it, walking away from a running timer goes unnoticed
+until the PC sleeps.
+
+Either way the threshold is five minutes, comfortably clear of the throttling a browser
+applies to background tabs.
 
 ### Your data
 

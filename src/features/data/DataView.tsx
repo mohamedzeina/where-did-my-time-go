@@ -12,6 +12,8 @@ import {
 import { listSessions } from '../../db/sessions'
 import { sessionsToCsv } from '../../lib/csv'
 import { downloadFile } from '../../lib/download'
+import { idlePermission, idleSupported, requestIdlePermission } from '../../lib/idle'
+import { awayWatchEnabled, setAwayWatchEnabled } from '../../lib/presence'
 import { toDateInput } from '../../lib/ranges'
 import { errorMessage } from '../activities/useActivities'
 import '../views.css'
@@ -46,6 +48,38 @@ function useStoragePersistence() {
   return { supported, persisted, request }
 }
 
+/**
+ * Whether the app may watch the machine for idleness. It needs a browser permission, which
+ * Chromium only grants from a click, so this is a button rather than a setting that just
+ * flips. Switching it off keeps the permission but stops using it.
+ */
+function useAwayDetection() {
+  const supported = idleSupported()
+  const [enabled, setEnabled] = useState(() => supported && awayWatchEnabled())
+  const [blocked, setBlocked] = useState(false)
+
+  // A permission revoked in browser settings leaves the switch on but useless; catch that on
+  // load so what's on screen matches what will actually happen.
+  useEffect(() => {
+    if (!supported) return
+    void idlePermission().then((state) => setBlocked(state === 'denied'))
+  }, [supported])
+
+  const toggle = async () => {
+    if (enabled) {
+      setAwayWatchEnabled(false)
+      setEnabled(false)
+      return
+    }
+    const granted = await requestIdlePermission()
+    setBlocked(!granted)
+    setAwayWatchEnabled(granted)
+    setEnabled(granted)
+  }
+
+  return { supported, enabled, blocked, toggle }
+}
+
 /** Back up, restore, export and delete: everything the app stores lives in this browser. */
 export function DataView() {
   const counts = useLiveQuery(countData, [])
@@ -55,6 +89,7 @@ export function DataView() {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
   const storage = useStoragePersistence()
+  const away = useAwayDetection()
 
   const downloadBackup = async () => {
     const backup = await exportData()
@@ -183,6 +218,40 @@ export function DataView() {
                 Protect storage
               </button>
             )}
+          </section>
+        )}
+
+        {away.supported && (
+          <section className="data-row" aria-labelledby="away-title">
+            <div className="data-text">
+              <h2 id="away-title" className="data-title">
+                Away detection
+              </h2>
+              <p>
+                Notice when you leave the PC with a timer running, so an afternoon away
+                doesn&rsquo;t land in your history as work. Time the app spends closed or asleep is
+                always noticed; this adds the case where you walk away and everything stays on.
+              </p>
+              <p className="data-meta">
+                <span
+                  className={away.enabled ? 'data-dot is-safe' : 'data-dot'}
+                  aria-hidden="true"
+                />
+                {away.blocked
+                  ? 'Blocked: allow idle detection for this site in your browser settings.'
+                  : away.enabled
+                    ? 'On: the app checks whether this PC is idle or locked.'
+                    : 'Off: only time with the app closed is noticed.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="text-button"
+              aria-pressed={away.enabled}
+              onClick={() => void away.toggle()}
+            >
+              {away.enabled ? 'Turn off' : 'Turn on'}
+            </button>
           </section>
         )}
 

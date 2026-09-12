@@ -117,14 +117,21 @@ Only one session runs at a time. Starting another activity stops the current one
       _Done when:_ Insights reads top to bottom without backtracking, and History stays fast
       with years of sessions.
 
+- [x] **14. Away detection**
+      A timer only tells the truth while something is watching it. The app stamps the clock
+      while one runs, so a hole in the stamps (PC asleep, browser closed, tab discarded) is
+      time nobody saw; optional system idle detection covers the other half, where you walk
+      away and the machine stays on. Either way it asks — trim it out, stop where you left,
+      or keep it — and never edits a session by itself.
+      _Done when:_ leaving a timer running over a sleep offers to take that time back out.
+
 ## Later / ideas
 
 - Limits as well as targets (e.g. Meetings at most 2h/day)
 - Tags and notes on sessions, search
 - Pomodoro mode
-- Idle detection ("you were away 20 min, keep that time?")
-- Notifications for long-running timers
-- Sync across devices (would need a backend)
+- Notifications for long-running timers (would catch a forgotten timer in the moment, where
+  away detection only repairs it afterwards)
 
 ## Done log
 
@@ -179,3 +186,11 @@ Only one session runs at a time. Starting another activity stops the current one
   list (a partial range skews the averages). The heatmap's table view went — History already
   lists those days — and the day-by-day table stayed but now scrolls inside a 22rem panel with
   a sticky header.
+- 2026-09-12 — Step 14, away detection. Two signals into one question: a localStorage
+  heartbeat every 20 s (a hole means the app wasn't running) and, behind a permission and a
+  switch in Data, Chromium's Idle Detection API for "the machine is idle or locked". Page-level
+  activity was rejected as a signal outright — a quiet tab is exactly what tracked deep work
+  looks like. Threshold 5 min, above background-tab throttling. Both sources widen one pending
+  gap rather than asking twice (walk away, then the PC sleeps). Nothing is ever changed
+  automatically: ignoring the prompt keeps the time, and Space is switched off while it's up.
+  This is a desktop-only app in practice, so sync left the ideas list.

@@ -7,7 +7,9 @@ import { useRoute, useRouteShortcuts, type Route } from './app/useRoute'
 import { DataView } from './features/data/DataView'
 import { HistoryView } from './features/history/HistoryView'
 import { InsightsView } from './features/insights/InsightsView'
+import { AwayPrompt } from './features/timer/AwayPrompt'
 import { TimerView } from './features/timer/TimerView'
+import { useAwayWatch } from './features/timer/useAwayWatch'
 import { useTimerShortcut } from './features/timer/useTimerShortcut'
 import './App.css'
 
@@ -24,7 +26,8 @@ function App() {
   const View = current.view
 
   useRouteShortcuts()
-  useTimerShortcut()
+  const away = useAwayWatch()
+  useTimerShortcut(!away.gap)
   const notice = useNotice()
 
   // After switching views, start at the top and move focus to the new view's heading, so
@@ -72,6 +75,7 @@ function App() {
       </nav>
 
       <div className="shell-stage">
+        <AwayPrompt watch={away} />
         <main className="shell-main" ref={main}>
           <View />
         </main>

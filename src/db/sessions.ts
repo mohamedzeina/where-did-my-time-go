@@ -109,6 +109,62 @@ export async function stopSession(at = Date.now()): Promise<StopResult | undefin
   })
 }
 
+/** What to do with a stretch of the running session that nobody was there for. */
+export type GapAction = 'trim' | 'stop'
+
+export interface GapResolution {
+  /** The session up to the moment you left, or `undefined` if that was too short to keep. */
+  kept?: Session
+  /** A fresh running session for the same activity, when the away time was trimmed out. */
+  resumed?: Session
+}
+
+/**
+ * Settles time inside the running session that the app couldn't vouch for, because it wasn't
+ * running or the machine was idle. `trim` cuts the away time out and picks the same activity
+ * back up at `backAt`; `stop` ends the session where you left and leaves nothing running.
+ *
+ * What's left leading up to `awayFrom` is held to {@link MIN_SESSION_MS} like any other timed
+ * session, so a timer started moments before you disappeared leaves nothing behind. Does
+ * nothing at all if the session has since been stopped or deleted, say in another tab.
+ */
+export async function resolveGap(
+  sessionId: string,
+  awayFrom: number,
+  action: GapAction,
+  backAt = Date.now(),
+): Promise<GapResolution> {
+  return db.transaction('rw', db.activities, db.sessions, async () => {
+    const row = await db.sessions.get(sessionId)
+    if (!row || row.end !== null) return {}
+
+    const cut = Math.max(awayFrom, row.start)
+    let kept: Session | undefined
+    if (cut - row.start < MIN_SESSION_MS) {
+      await db.sessions.delete(row.id)
+    } else {
+      kept = { ...toSession(row), end: cut }
+      await db.sessions.put(toRow(kept))
+    }
+    if (action === 'stop') return { kept }
+
+    // Archiving stops the running timer, so this only trips when it happened between the
+    // question and the answer — and then there's nothing sensible to pick back up.
+    const activity = await db.activities.get(row.activityId)
+    if (!activity || activity.archived) return { kept }
+
+    const resumed: Session = {
+      id: crypto.randomUUID(),
+      activityId: row.activityId,
+      start: Math.max(backAt, cut),
+      end: null,
+      note: '',
+    }
+    await db.sessions.add(toRow(resumed))
+    return { kept, resumed }
+  })
+}
+
 /** Records a finished session after the fact, for time you forgot to track. */
 export async function addSession({ activityId, start, end, note = '' }: NewSession) {
   assertValidRange(start, end)

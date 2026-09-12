@@ -1,0 +1,41 @@
+/*
+ * An amber caution strip across the top of the stage: the only thing in the app allowed to
+ * interrupt. Sodium on midnight, keyed like the "now" line on the ribbon.
+ */
+.away {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  border-block-end: 1px solid var(--line);
+  box-shadow: inset 3px 0 var(--accent);
+  background: var(--surface);
+}
+
+.away-text {
+  max-inline-size: 68ch;
+  font-size: var(--step--1);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.away-amount {
+  font-family: var(--font-mono);
+  font-variation-settings: 'wdth' 87.5;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.away-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (max-width: 799px) {
+  .away {
+    padding: var(--space-3) var(--space-4);
+  }
+}
