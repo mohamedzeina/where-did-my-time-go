@@ -69,7 +69,8 @@
   background: var(--ok);
 }
 
-.data-row > .text-button {
+.data-row > .text-button,
+.data-row > .input {
   justify-self: end;
 }
 
@@ -94,7 +95,8 @@
     grid-template-columns: 1fr;
   }
 
-  .data-row > .text-button {
+  .data-row > .text-button,
+  .data-row > .input {
     justify-self: start;
   }
 }

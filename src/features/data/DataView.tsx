@@ -13,7 +13,13 @@ import { listSessions } from '../../db/sessions'
 import { sessionsToCsv } from '../../lib/csv'
 import { downloadFile } from '../../lib/download'
 import { idlePermission, idleSupported, requestIdlePermission } from '../../lib/idle'
+import {
+  notificationPermission,
+  notificationsSupported,
+  requestNotificationPermission,
+} from '../../lib/notify'
 import { awayWatchEnabled, setAwayWatchEnabled } from '../../lib/presence'
+import { REMINDER_CHOICES, reminderEvery, setReminderEvery } from '../../lib/reminders'
 import { toDateInput } from '../../lib/ranges'
 import { errorMessage } from '../activities/useActivities'
 import '../views.css'
@@ -80,6 +86,26 @@ function useAwayDetection() {
   return { supported, enabled, blocked, toggle }
 }
 
+/**
+ * How often to interrupt a running timer. Picking an interval asks for the notification
+ * permission first, and a refusal leaves the setting off rather than silently on and mute.
+ */
+function useReminders() {
+  const supported = notificationsSupported()
+  const [every, setEvery] = useState(() => (supported ? reminderEvery() : 0))
+  const [blocked, setBlocked] = useState(() => notificationPermission() === 'denied')
+
+  const choose = async (ms: number) => {
+    const granted = ms === 0 || (await requestNotificationPermission())
+    setBlocked(!granted)
+    const next = granted ? ms : 0
+    setReminderEvery(next)
+    setEvery(next)
+  }
+
+  return { supported, every, blocked, choose }
+}
+
 /** Back up, restore, export and delete: everything the app stores lives in this browser. */
 export function DataView() {
   const counts = useLiveQuery(countData, [])
@@ -90,6 +116,7 @@ export function DataView() {
   const fileInput = useRef<HTMLInputElement>(null)
   const storage = useStoragePersistence()
   const away = useAwayDetection()
+  const reminders = useReminders()
 
   const downloadBackup = async () => {
     const backup = await exportData()
@@ -252,6 +279,45 @@ export function DataView() {
             >
               {away.enabled ? 'Turn off' : 'Turn on'}
             </button>
+          </section>
+        )}
+
+        {reminders.supported && (
+          <section className="data-row" aria-labelledby="reminders-title">
+            <div className="data-text">
+              <h2 id="reminders-title" className="data-title">
+                Long timer reminders
+              </h2>
+              <p>
+                A timer you forgot to stop turns a whole evening into tracked work. This says
+                something while it&rsquo;s still running, when stopping costs a click instead of an
+                edit in History. Reminders count from when the timer started, and only show on the
+                desktop when the app isn&rsquo;t the window you&rsquo;re looking at.
+              </p>
+              <p className="data-meta">
+                <span
+                  className={reminders.every ? 'data-dot is-safe' : 'data-dot'}
+                  aria-hidden="true"
+                />
+                {reminders.blocked
+                  ? 'Blocked: allow notifications for this site in your browser settings.'
+                  : reminders.every
+                    ? 'On: a running timer says how long it has been going.'
+                    : 'Off: a running timer never interrupts you.'}
+              </p>
+            </div>
+            <select
+              className="input"
+              aria-label="How often to remind me about a running timer"
+              value={String(reminders.every)}
+              onChange={(event) => void reminders.choose(Number(event.target.value))}
+            >
+              {REMINDER_CHOICES.map((choice) => (
+                <option key={choice.ms} value={choice.ms}>
+                  {choice.label}
+                </option>
+              ))}
+            </select>
           </section>
         )}
 

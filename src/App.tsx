@@ -10,6 +10,7 @@ import { InsightsView } from './features/insights/InsightsView'
 import { AwayPrompt } from './features/timer/AwayPrompt'
 import { TimerView } from './features/timer/TimerView'
 import { useAwayWatch } from './features/timer/useAwayWatch'
+import { useLongTimerReminder } from './features/timer/useLongTimerReminder'
 import { useTimerShortcut } from './features/timer/useTimerShortcut'
 import './App.css'
 
@@ -27,6 +28,7 @@ function App() {
 
   useRouteShortcuts()
   const away = useAwayWatch()
+  useLongTimerReminder()
   useTimerShortcut(!away.gap)
   const notice = useNotice()
 

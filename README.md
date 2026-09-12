@@ -16,6 +16,8 @@ See [BACKLOG.md](BACKLOG.md) for how it was built, step by step, and the design 
   or (if you switch it on) you walked away and the machine went idle — it says how long and
   offers to trim that time out, stop the session where you left, or keep it. It never changes
   a session on its own, so ignoring the question keeps the time as tracked.
+- **Reminders:** a running timer can say how long it has been going, every hour or few. It
+  only interrupts the desktop when the app isn't the window you're looking at.
 - **Goals:** give any activity a daily or weekly time goal. Its tile fills up toward it as
   you go, and Insights shows how often you've met it.
 - **Today:** tracked time against the day so far, a total per activity, and today's sessions.
@@ -63,6 +65,19 @@ until the PC sleeps.
 
 Either way the threshold is five minutes, comfortably clear of the throttling a browser
 applies to background tabs.
+
+### Long timer reminders
+
+Away detection repairs a forgotten timer afterwards; a reminder catches it while it's still
+running, when stopping costs a click. Pick an interval under **Long timer reminders** in the
+**Data** view and a running timer says how long it has been going.
+
+Reminders count from when the timer started, so they land on the session's own hours (2:00:00,
+4:00:00) and reloading in between neither repeats one nor shifts the rest. With the app in
+front of you it's the same quiet line the rest of the app uses — the giant clock is already
+saying it — and it only becomes a desktop notification when the app is behind another window
+or minimised, which is how a timer gets forgotten in the first place. That part needs the
+notification permission, so the setting asks for it when you pick an interval.
 
 ### Your data
 

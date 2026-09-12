@@ -125,13 +125,18 @@ Only one session runs at a time. Starting another activity stops the current one
       or keep it — and never edits a session by itself.
       _Done when:_ leaving a timer running over a sleep offers to take that time back out.
 
+- [x] **15. Long timer reminders**
+      The other half of step 14: catching a forgotten timer while it runs rather than
+      repairing it afterwards. An interval chosen in Data, counted from the session's start,
+      delivered as the in-app notice when you're looking at the app and as a desktop
+      notification when you aren't.
+      _Done when:_ a timer left running past the interval says so without you going looking.
+
 ## Later / ideas
 
 - Limits as well as targets (e.g. Meetings at most 2h/day)
 - Tags and notes on sessions, search
 - Pomodoro mode
-- Notifications for long-running timers (would catch a forgotten timer in the moment, where
-  away detection only repairs it afterwards)
 
 ## Done log
 
@@ -194,3 +199,15 @@ Only one session runs at a time. Starting another activity stops the current one
   gap rather than asking twice (walk away, then the PC sleeps). Nothing is ever changed
   automatically: ignoring the prompt keeps the time, and Space is switched off while it's up.
   This is a desktop-only app in practice, so sync left the ideas list.
+- 2026-09-12 — Published to GitHub Pages so the app installs and pins to the taskbar. A
+  project site is served from a subfolder, so the build sets a base path and the manifest's
+  id, scope and start_url and the service worker's navigation fallback all follow it; dev
+  stays at the root. Pushing to main redeploys behind lint, formatting and tests. Pages has
+  to be switched on in Settings by hand — the workflow token isn't allowed to do it. Opera GX
+  turned out not to offer PWA install, so it was installed from another Chromium browser.
+- 2026-09-12 — Step 15, long timer reminders. Interval picked in Data (off by default, asks
+  for the notification permission when you pick one), scheduled from the session's start so a
+  reload neither repeats nor shifts one. Delivery splits on `document.hasFocus()` rather than
+  visibility, because a window sitting behind another still counts as visible and that is
+  exactly when you need telling. Fake timers had to be narrowed to setTimeout/clearTimeout/Date
+  in the tests: faking microtasks and setImmediate ends IndexedDB transactions under Dexie.
