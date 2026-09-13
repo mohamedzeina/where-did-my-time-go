@@ -34,6 +34,20 @@
   gap: var(--space-4) var(--space-5);
 }
 
+/* Note and tags for the running session: the note gets the room, tags sit beside it. */
+.running-details {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-3);
+  max-inline-size: 48rem;
+}
+
+@media (max-width: 799px) {
+  .running-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .timer-activity {
   color: var(--text);
   font-weight: 600;

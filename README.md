@@ -10,7 +10,8 @@ See [BACKLOG.md](BACKLOG.md) for how it was built, step by step, and the design 
 - **Timer:** press an activity to start timing it, press another to switch, or Stop. The
   running timer is saved as it goes, so it keeps counting through reloads and restarts.
   Sessions under 10 seconds aren't kept, and switching within 10 seconds just corrects the
-  activity, so mis-taps leave nothing behind.
+  activity, so mis-taps leave nothing behind. While a timer runs you can give it a note and
+  tags, which save as you type.
 - **Away time:** a timer left running while you're gone counts time you didn't spend. When
   the app comes back from a stretch it wasn't watching — the PC slept, the browser was closed,
   or (if you switch it on) you walked away and the machine went idle — it says how long and
@@ -23,10 +24,13 @@ See [BACKLOG.md](BACKLOG.md) for how it was built, step by step, and the design 
 - **Today:** tracked time against the day so far, a total per activity, and today's sessions.
   The day ribbon down the left edge shows every session as a band at its time of day.
 - **History:** sessions grouped by day, filtered by date range and activity. Fix any session
-  in place, or add one you forgot to track.
+  in place, or add one you forgot to track. Search looks through notes, tags and activity
+  names, and `#tag` finds a tag exactly; the total above the list counts whatever matched, so
+  searching a tag tells you how much time went to it. Click a tag on a session to search it.
 - **Insights:** a 26-week calendar heatmap, headline numbers, time per activity, and daily or
   weekly stacked totals. Every chart has a table view.
-- **Data:** download a backup, restore one, export sessions as CSV, or delete everything.
+- **Data:** download a backup, restore one, export sessions as CSV (with notes and tags), or
+  delete everything.
 
 ### Keyboard
 

@@ -20,7 +20,13 @@ async function seed() {
   const gym = await createActivity({ name: 'Gym', color: '#111' }, 1)
   await updateActivity(gym.id, { goal: { period: 'week', ms: 3 * 3_600_000 } })
   const old = await createActivity({ name: 'Old', color: '#222' }, 2)
-  await addSession({ activityId: gym.id, start: 1000, end: 5000, note: 'Legs, "heavy"' })
+  await addSession({
+    activityId: gym.id,
+    start: 1000,
+    end: 5000,
+    note: 'Legs, "heavy"',
+    tags: ['legs'],
+  })
   await addSession({ activityId: old.id, start: 6000, end: 7000 })
   await updateActivity(old.id, { archived: true })
   await startSession(gym.id, 8000)
@@ -68,11 +74,16 @@ describe('parseBackup', () => {
     version: BACKUP_VERSION,
     exportedAt: 1,
     activities: [{ id: 'a', name: 'Gym', color: '#111', archived: false, createdAt: 1 }],
-    sessions: [{ id: 's', activityId: 'a', start: 10, end: 20, note: '' }],
+    sessions: [{ id: 's', activityId: 'a', start: 10, end: 20, note: '', tags: [] }],
   })
 
   it('accepts a valid backup', () => {
     expect(parseBackup(valid())).toEqual(valid())
+  })
+
+  it('accepts a backup from before tags, with none on its sessions', () => {
+    const { tags: _, ...untagged } = valid().sessions[0]
+    expect(parseBackup({ ...valid(), sessions: [untagged] }).sessions[0].tags).toEqual([])
   })
 
   it.each([
@@ -90,6 +101,11 @@ describe('parseBackup', () => {
     [
       'a session that ends before it starts',
       { ...valid(), sessions: [{ id: 's', activityId: 'a', start: 20, end: 10, note: '' }] },
+      /Session 1 .* damaged/,
+    ],
+    [
+      'damaged tags',
+      { ...valid(), sessions: [{ ...valid().sessions[0], tags: 'legs' }] },
       /Session 1 .* damaged/,
     ],
     [

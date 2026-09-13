@@ -13,6 +13,7 @@ import {
   toDateInput,
   type RangePreset,
 } from '../../lib/ranges'
+import { isEmptySearch, matchesSearch, parseSearch } from '../../lib/search'
 import { formatHoursMinutes, startOfDay } from '../../lib/totals'
 import { useNow } from '../../lib/useNow'
 import { ElapsedText } from '../timer/TimerReadout'
@@ -23,12 +24,13 @@ import './history.css'
 /** Sessions added to the page at a time, so a long range doesn't render thousands of rows. */
 const PAGE = 100
 
-/** Every session, grouped by day, with filters and in-place editing. */
+/** Every session, grouped by day, with filters, search and in-place editing. */
 export function HistoryView() {
   const now = useNow(30_000).getTime()
   const [preset, setPreset] = useState<RangePreset>('week')
   const [custom, setCustom] = useState(() => ({ from: toDateInput(now), to: toDateInput(now) }))
   const [activityFilter, setActivityFilter] = useState('')
+  const [query, setQuery] = useState('')
   const [editingId, setEditingId] = useState<string>()
   const [adding, setAdding] = useState(false)
 
@@ -41,17 +43,24 @@ export function HistoryView() {
     return { sessions, activities }
   }, [from, to, activityFilter])
 
+  // Searching happens here rather than in the query: it's cheap, and typing stays instant.
+  const activityById = new Map(data?.activities.map((a) => [a.id, a]))
+  const terms = parseSearch(query)
+  const searching = !isEmptySearch(terms)
+  const sessions = (data?.sessions ?? []).filter((session) =>
+    matchesSearch(session, activityById.get(session.activityId)?.name ?? '', terms),
+  )
+
   // Only the newest sessions are put on the page; the totals below still count them all.
   // The limit is tied to the filters, so changing them starts from the top again.
-  const filters = `${from}:${to}:${activityFilter}`
+  const filters = `${from}:${to}:${activityFilter}:${query}`
   const [page, setPage] = useState({ filters, limit: PAGE })
   const limit = page.filters === filters ? page.limit : PAGE
 
-  const allGroups = data ? groupByDay(data.sessions, now) : []
+  const allGroups = groupByDay(sessions, now)
   const groups = takeSessions(allGroups, limit)
-  const activityById = new Map(data?.activities.map((a) => [a.id, a]))
   const total = allGroups.reduce((sum, g) => sum + g.total, 0)
-  const count = data?.sessions.length ?? 0
+  const count = sessions.length
   const shown = groups.reduce((sum, g) => sum + g.sessions.length, 0)
 
   return (
@@ -125,8 +134,18 @@ export function HistoryView() {
             ))}
           </select>
         </label>
+        <label className="field history-search">
+          <span className="field-label">Search</span>
+          <input
+            className="input"
+            type="search"
+            value={query}
+            placeholder="Notes, activities, #tag"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
         {data && (
-          <p className="history-summary">
+          <p className="history-summary" aria-live="polite">
             <strong>{formatHoursMinutes(total)}</strong> across {count}{' '}
             {count === 1 ? 'session' : 'sessions'}
           </p>
@@ -139,7 +158,22 @@ export function HistoryView() {
 
       {data && groups.length === 0 && (
         <p className="view-lede">
-          No sessions in this range. Pick a wider range, or add one you forgot to track.
+          {searching ? (
+            <>
+              Nothing matches &ldquo;{query.trim()}&rdquo;
+              {preset === 'all' ? '.' : ' in this range.'}
+              {preset !== 'all' && (
+                <>
+                  {' '}
+                  <button type="button" className="text-button" onClick={() => setPreset('all')}>
+                    Search all time
+                  </button>
+                </>
+              )}
+            </>
+          ) : (
+            'No sessions in this range. Pick a wider range, or add one you forgot to track.'
+          )}
         </p>
       )}
 
@@ -172,6 +206,7 @@ export function HistoryView() {
                     setAdding(false)
                     setEditingId(session.id)
                   }}
+                  onTag={(tag) => setQuery(`#${tag}`)}
                 />
               ),
             )}
@@ -201,10 +236,13 @@ function HistoryRow({
   session,
   activity,
   onEdit,
+  onTag,
 }: {
   session: Session
   activity?: Activity
   onEdit: () => void
+  /** Search for a tag the session carries. */
+  onTag: (tag: string) => void
 }) {
   const running = session.end === null
   const range = `${formatClock(new Date(session.start))} – ${
@@ -224,6 +262,21 @@ function HistoryRow({
       </span>
       <span className="history-what">
         <span className="session-name">{name}</span>
+        {session.tags.length > 0 && (
+          <span className="history-tags">
+            {session.tags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                className="tag-chip"
+                aria-label={`Search for #${tag}`}
+                onClick={() => onTag(tag)}
+              >
+                #{tag}
+              </button>
+            ))}
+          </span>
+        )}
         {session.note && <span className="history-note">{session.note}</span>}
       </span>
       <span className="session-duration">

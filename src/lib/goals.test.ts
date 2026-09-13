@@ -11,6 +11,7 @@ const session = (activityId: string, start: number, end: number | null): Session
   start,
   end,
   note: '',
+  tags: [],
 })
 const withGoal = (goal: Goal): Activity & { goal: Goal } => ({
   id: 'work',

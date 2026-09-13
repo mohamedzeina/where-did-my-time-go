@@ -22,6 +22,17 @@ export class TimeDatabase extends Dexie {
       activities: 'id, createdAt',
       sessions: 'id, activityId, start, running',
     })
+    // Tags arrived later: every tag is indexed, so the distinct ones are a key-only read.
+    this.version(2)
+      .stores({ sessions: 'id, activityId, start, running, *tags' })
+      .upgrade((tx) =>
+        tx
+          .table<SessionRow, string>('sessions')
+          .toCollection()
+          .modify((row) => {
+            row.tags ??= []
+          }),
+      )
 
     // Runs only when the database is created, so archiving or renaming the starters sticks.
     this.on('populate', (tx) => {

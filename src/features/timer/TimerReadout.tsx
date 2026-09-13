@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { Clock } from '../../components/Clock'
 import { formatClock } from '../../lib/day'
 import { formatDuration } from '../../lib/duration'
+import { RunningDetails } from './RunningDetails'
 import { resumeTarget, stopTimer } from './toggleTimer'
 import { useElapsed, type RunningTimer } from './useRunningTimer'
 
@@ -66,6 +67,7 @@ export function TimerReadout({ running }: { running: RunningTimer | null }) {
           </kbd>
         </button>
       </div>
+      <RunningDetails key={session.id} session={session} />
     </div>
   )
 }

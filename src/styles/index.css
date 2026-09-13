@@ -94,6 +94,32 @@ h1[tabindex='-1']:focus {
   color: var(--bg);
 }
 
+/* One tag, as a mono `#tag` token. Also used as a plain button to search for it. */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--step-mono);
+  font-variation-settings: 'wdth' 87.5;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+button.tag-chip {
+  cursor: pointer;
+}
+
+button.tag-chip:hover {
+  border-color: var(--text-faint);
+  color: var(--text);
+}
+
 /* A labelled form control: small mono label above the input. */
 .field {
   display: grid;

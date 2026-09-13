@@ -28,4 +28,6 @@ export interface Session {
   /** Epoch milliseconds, or `null` while the timer is still running. */
   end: number | null
   note: string
+  /** Lowercase, without the `#`, no duplicates. See `normalizeTags`. */
+  tags: string[]
 }

@@ -10,6 +10,7 @@ const session = (activityId: string, start: number, end: number | null): Session
   start,
   end,
   note: '',
+  tags: [],
 })
 
 describe('startOfWeek', () => {

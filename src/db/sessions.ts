@@ -1,3 +1,4 @@
+import { normalizeTags } from '../lib/tags'
 import { db, type SessionRow } from './db'
 import type { Session } from './types'
 
@@ -6,9 +7,10 @@ export interface NewSession {
   start: number
   end: number
   note?: string
+  tags?: string[]
 }
 
-export type SessionChanges = Partial<Pick<Session, 'activityId' | 'start' | 'note'>> & {
+export type SessionChanges = Partial<Pick<Session, 'activityId' | 'start' | 'note' | 'tags'>> & {
   /** A stopped session can't be restarted, so `end` can only be moved, not cleared. */
   end?: number
 }
@@ -35,8 +37,8 @@ export interface SessionQuery {
 }
 
 function toSession(row: SessionRow): Session {
-  const { id, activityId, start, end, note } = row
-  return { id, activityId, start, end, note }
+  const { id, activityId, start, end, note, tags = [] } = row
+  return { id, activityId, start, end, note, tags }
 }
 
 function toRow(session: Session): SessionRow {
@@ -85,7 +87,14 @@ export async function startSession(activityId: string, at = Date.now()): Promise
       await db.sessions.put(toRow({ ...toSession(running), end: Math.max(at, running.start) }))
     }
 
-    const session: Session = { id: crypto.randomUUID(), activityId, start: at, end: null, note: '' }
+    const session: Session = {
+      id: crypto.randomUUID(),
+      activityId,
+      start: at,
+      end: null,
+      note: '',
+      tags: [],
+    }
     await db.sessions.add(toRow(session))
     return session
   })
@@ -122,7 +131,8 @@ export interface GapResolution {
 /**
  * Settles time inside the running session that the app couldn't vouch for, because it wasn't
  * running or the machine was idle. `trim` cuts the away time out and picks the same activity
- * back up at `backAt`; `stop` ends the session where you left and leaves nothing running.
+ * back up at `backAt`, carrying the note and tags over; `stop` ends the session where you left
+ * and leaves nothing running.
  *
  * What's left leading up to `awayFrom` is held to {@link MIN_SESSION_MS} like any other timed
  * session, so a timer started moments before you disappeared leaves nothing behind. Does
@@ -158,7 +168,8 @@ export async function resolveGap(
       activityId: row.activityId,
       start: Math.max(backAt, cut),
       end: null,
-      note: '',
+      note: row.note,
+      tags: row.tags ?? [],
     }
     await db.sessions.add(toRow(resumed))
     return { kept, resumed }
@@ -166,11 +177,18 @@ export async function resolveGap(
 }
 
 /** Records a finished session after the fact, for time you forgot to track. */
-export async function addSession({ activityId, start, end, note = '' }: NewSession) {
+export async function addSession({ activityId, start, end, note = '', tags = [] }: NewSession) {
   assertValidRange(start, end)
   return db.transaction('rw', db.activities, db.sessions, async () => {
     await assertActivityUsable(activityId)
-    const session: Session = { id: crypto.randomUUID(), activityId, start, end, note }
+    const session: Session = {
+      id: crypto.randomUUID(),
+      activityId,
+      start,
+      end,
+      note,
+      tags: normalizeTags(tags),
+    }
     await db.sessions.add(toRow(session))
     return session
   })
@@ -182,6 +200,7 @@ export async function updateSession(id: string, changes: SessionChanges): Promis
     if (!existing) throw new Error(`Session ${id} not found.`)
 
     const updated: Session = { ...toSession(existing), ...changes }
+    if (changes.tags) updated.tags = normalizeTags(changes.tags)
     assertValidRange(updated.start, updated.end)
     if (changes.activityId && changes.activityId !== existing.activityId) {
       await assertActivityUsable(changes.activityId)
@@ -218,4 +237,9 @@ export async function firstSessionStart(): Promise<number | undefined> {
 /** How many sessions, running or finished, belong to an activity. */
 export async function countSessions(activityId: string): Promise<number> {
   return db.sessions.where('activityId').equals(activityId).count()
+}
+
+/** Every tag used on any session, alphabetically. */
+export async function listTags(): Promise<string[]> {
+  return (await db.sessions.orderBy('tags').uniqueKeys()) as string[]
 }

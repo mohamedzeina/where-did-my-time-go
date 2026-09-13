@@ -99,6 +99,63 @@ describe('HistoryView', () => {
     expect(screen.queryByText('Gym', { selector: '.session-name' })).not.toBeInTheDocument()
   })
 
+  it('searches notes, activity names and exact tags, totalling what matched', async () => {
+    await addSession({ activityId: gym.id, start: today, end: today + 10 * MIN, tags: ['legs'] })
+    await addSession({
+      activityId: reading.id,
+      start: today + 20 * MIN,
+      end: today + 50 * MIN,
+      note: 'Leg day notes',
+    })
+    const user = userEvent.setup()
+    render(<HistoryView />)
+
+    await screen.findByText(/across 2 sessions/)
+    const search = screen.getByRole('searchbox', { name: 'Search' })
+
+    await user.type(search, 'leg')
+    expect(await screen.findByText(/across 2 sessions/)).toBeInTheDocument()
+
+    await user.clear(search)
+    await user.type(search, '#legs')
+    expect(await screen.findByText(/across 1 session$/)).toBeInTheDocument()
+    expect(screen.getByText('10m', { selector: '.history-summary strong' })).toBeInTheDocument()
+
+    await user.clear(search)
+    await user.type(search, 'reading')
+    expect(await screen.findByText('Leg day notes')).toBeInTheDocument()
+    expect(screen.queryByText('Gym', { selector: '.session-name' })).not.toBeInTheDocument()
+  })
+
+  it('searches a tag when it is clicked', async () => {
+    await addSession({ activityId: gym.id, start: today, end: today + MIN, tags: ['legs'] })
+    await addSession({ activityId: gym.id, start: today + 2 * MIN, end: today + 3 * MIN })
+    const user = userEvent.setup()
+    render(<HistoryView />)
+
+    await user.click(await screen.findByRole('button', { name: 'Search for #legs' }))
+
+    expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveValue('#legs')
+    expect(await screen.findByText(/across 1 session$/)).toBeInTheDocument()
+  })
+
+  it('offers all time when a search finds nothing in the range', async () => {
+    await addSession({
+      activityId: gym.id,
+      start: today - 20 * DAY,
+      end: today - 20 * DAY + MIN,
+      note: 'Old PR',
+    })
+    const user = userEvent.setup()
+    render(<HistoryView />)
+
+    await user.type(await screen.findByRole('searchbox', { name: 'Search' }), 'pr')
+    await user.click(await screen.findByRole('button', { name: 'Search all time' }))
+
+    expect(await screen.findByText('Old PR')).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Range' })).toHaveValue('all')
+  })
+
   it('leaves out sessions older than the range', async () => {
     await addSession({ activityId: gym.id, start: today - 20 * DAY, end: today - 20 * DAY + MIN })
     const user = userEvent.setup()
@@ -127,11 +184,18 @@ describe('HistoryView', () => {
     await user.clear(end)
     await user.type(end, '00:25')
     await user.type(within(form).getByRole('textbox', { name: 'Note' }), 'Was reading')
+    await user.type(within(form).getByRole('textbox', { name: 'Tags' }), '#Fiction, dune')
     await user.click(within(form).getByRole('button', { name: 'Save changes' }))
 
     await waitFor(async () =>
       expect(await allSessions()).toEqual([
-        { ...session, activityId: reading.id, end: yesterday + 25 * MIN, note: 'Was reading' },
+        {
+          ...session,
+          activityId: reading.id,
+          end: yesterday + 25 * MIN,
+          note: 'Was reading',
+          tags: ['fiction', 'dune'],
+        },
       ]),
     )
     expect(await screen.findByText('Was reading')).toBeInTheDocument()

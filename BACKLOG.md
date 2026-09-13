@@ -132,10 +132,18 @@ Only one session runs at a time. Starting another activity stops the current one
       notification when you aren't.
       _Done when:_ a timer left running past the interval says so without you going looking.
 
+- [x] **16. Tags, notes and search**
+      Free-form tags on sessions (lowercase, no `#`, suggested from tags already in use), and a
+      note and tags you can fill in on the Timer view while a session runs, not only afterwards
+      in History. History gets a search box over notes, tags and activity names, where `#tag`
+      matches a tag exactly; its summary totals what's listed, so a tag search answers "how
+      much time went to this". Tags ride along in backups and the CSV.
+      _Done when:_ tagging a running session and searching `#that-tag` in History finds it,
+      with its time in the total.
+
 ## Later / ideas
 
 - Limits as well as targets (e.g. Meetings at most 2h/day)
-- Tags and notes on sessions, search
 - Pomodoro mode
 
 ## Done log
@@ -211,3 +219,13 @@ Only one session runs at a time. Starting another activity stops the current one
   visibility, because a window sitting behind another still counts as visible and that is
   exactly when you need telling. Fake timers had to be narrowed to setTimeout/clearTimeout/Date
   in the tests: faking microtasks and setImmediate ends IndexedDB transactions under Dexie.
+- 2026-09-13 — Step 16, tags, notes and search. Tags are free-form strings on the session,
+  lowercase without the `#`, behind a multi-entry index so the distinct ones are a key-only
+  read; a database upgrade gives older sessions an empty list, and older backups still
+  restore. The running session gets a note and tag box on the Timer view that save as you
+  type (the tags are held locally so quick typing can't race the database). History searches
+  in memory over the range it already loaded: words match notes, tags and activity names,
+  `#tag` matches exactly, and the summary total becomes the answer to "how long on this".
+  Clicking a tag searches it; an empty search in a short range offers all time. Trimming away
+  time carries the note and tags onto the resumed session. CSV gained a trailing `tags`
+  column. Suggestions use the native datalist. Today rows don't show notes or tags yet.

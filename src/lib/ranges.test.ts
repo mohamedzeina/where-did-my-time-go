@@ -19,6 +19,7 @@ const session = (id: string, start: number, end: number | null): Session => ({
   start,
   end,
   note: '',
+  tags: [],
 })
 
 describe('resolveRange', () => {

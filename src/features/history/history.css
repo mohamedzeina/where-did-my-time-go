@@ -45,7 +45,12 @@
   list-style: none;
 }
 
-/* time · activity and note · duration · edit */
+.history-search {
+  flex: 1 1 14rem;
+  max-inline-size: 24rem;
+}
+
+/* time · activity, tags and note · duration · edit */
 .history-row {
   display: grid;
   grid-template-columns: 8.5rem minmax(0, 1fr) 5.5rem auto;
@@ -65,6 +70,12 @@
 .history-what .session-name {
   flex: none;
   max-inline-size: 60%;
+}
+
+.history-tags {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
 }
 
 .history-note {
@@ -160,6 +171,7 @@
 
   .history-row .history-what {
     grid-area: what;
+    flex-wrap: wrap;
   }
 
   .history-row .session-duration {

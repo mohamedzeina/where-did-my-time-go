@@ -1,0 +1,45 @@
+/* A text box that holds its tags as chips, wrapping onto more lines as they add up. */
+.tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  cursor: text;
+}
+
+.tag-input:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+}
+
+.tag-input-text {
+  flex: 1 1 6rem;
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.tag-input-text:focus {
+  outline: none;
+}
+
+.tag-input-text::placeholder {
+  color: var(--text-muted);
+}
+
+.tag-remove {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tag-remove:hover {
+  color: var(--text);
+}

@@ -1,3 +1,4 @@
+import { normalizeTags } from '../lib/tags'
 import { assertValidGoal } from './activities'
 import { db, type SessionRow } from './db'
 import type { Activity, Goal, Session } from './types'
@@ -15,8 +16,8 @@ export interface Backup {
   sessions: Session[]
 }
 
-function toSession({ id, activityId, start, end, note }: SessionRow): Session {
-  return { id, activityId, start, end, note }
+function toSession({ id, activityId, start, end, note, tags }: SessionRow): Session {
+  return { id, activityId, start, end, note, tags }
 }
 
 /** A snapshot of all activities and sessions, running session included. */
@@ -93,14 +94,26 @@ export function parseBackup(value: unknown): Backup {
       typeof s.activityId !== 'string' ||
       !isTime(s.start) ||
       !(s.end === null || (isTime(s.end) && s.end > s.start)) ||
-      typeof s.note !== 'string'
+      typeof s.note !== 'string' ||
+      // Tags arrived after the first backup format too.
+      !(
+        s.tags === undefined ||
+        (Array.isArray(s.tags) && s.tags.every((t) => typeof t === 'string'))
+      )
     ) {
       throw new Error(`Session ${i + 1} in this backup is damaged.`)
     }
     if (!activityIds.has(s.activityId)) {
       throw new Error(`Session ${i + 1} belongs to an activity that isn't in the backup.`)
     }
-    return { id: s.id, activityId: s.activityId, start: s.start, end: s.end, note: s.note }
+    return {
+      id: s.id,
+      activityId: s.activityId,
+      start: s.start,
+      end: s.end,
+      note: s.note,
+      tags: normalizeTags((s.tags as string[] | undefined) ?? []),
+    }
   })
   if (new Set(sessions.map((s) => s.id)).size !== sessions.length) {
     throw new Error('This backup lists the same session twice.')

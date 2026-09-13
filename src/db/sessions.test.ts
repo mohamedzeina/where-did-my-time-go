@@ -7,6 +7,7 @@ import {
   deleteSession,
   getRunningSession,
   listSessions,
+  listTags,
   MIN_SESSION_MS,
   resolveGap,
   startSession,
@@ -258,5 +259,36 @@ describe('resolveGap', () => {
     expect(kept).toEqual({ ...running, end: LEFT })
     expect(resumed).toBeUndefined()
     expect(await getRunningSession()).toBeUndefined()
+  })
+})
+
+describe('tags', () => {
+  it('stores tags lowercase, without the hash and without repeats', async () => {
+    const session = await addSession({
+      activityId: gym.id,
+      start: 0,
+      end: 60_000,
+      tags: ['#Legs', 'legs', ' Heavy Day '],
+    })
+    expect(session.tags).toEqual(['legs', 'heavy-day'])
+
+    const updated = await updateSession(session.id, { tags: ['#PR'] })
+    expect(updated.tags).toEqual(['pr'])
+  })
+
+  it('lists every tag in use once, alphabetically', async () => {
+    await addSession({ activityId: gym.id, start: 0, end: 1, tags: ['legs', 'pr'] })
+    await addSession({ activityId: reading.id, start: 2, end: 3, tags: ['fiction', 'legs'] })
+
+    expect(await listTags()).toEqual(['fiction', 'legs', 'pr'])
+  })
+
+  it('carries the note and tags over when away time is trimmed out', async () => {
+    const running = await startSession(gym.id, 0)
+    await updateSession(running.id, { note: 'Legs', tags: ['pr'] })
+
+    const { resumed } = await resolveGap(running.id, 60_000, 'trim', 120_000)
+
+    expect(resumed).toMatchObject({ note: 'Legs', tags: ['pr'] })
   })
 })

@@ -18,6 +18,7 @@ export const SESSION_CSV_HEADER = [
   'duration_minutes',
   'activity',
   'note',
+  'tags',
 ] as const
 
 /**
@@ -39,6 +40,7 @@ export function sessionsToCsv(
         (((s.end ?? now) - s.start) / 60_000).toFixed(2),
         activities.get(s.activityId)?.name ?? 'Deleted activity',
         s.note,
+        s.tags.join(' '),
       ]
         .map(csvField)
         .join(','),

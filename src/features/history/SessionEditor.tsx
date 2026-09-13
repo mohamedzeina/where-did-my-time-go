@@ -1,5 +1,7 @@
+import { useLiveQuery } from 'dexie-react-hooks'
 import { useId, useState, type FormEvent } from 'react'
-import { addSession, deleteSession, updateSession } from '../../db/sessions'
+import { TagInput } from '../../components/TagInput'
+import { addSession, deleteSession, listTags, updateSession } from '../../db/sessions'
 import type { Activity, Session } from '../../db/types'
 import {
   fromDateTimeInputs,
@@ -26,12 +28,12 @@ function defaultTimes() {
 }
 
 /**
- * Add or edit a session: activity, date, start and end times (to the second), and a note.
+ * Add or edit a session: activity, date, start and end times (to the second), a note and tags.
  * An end time before the start is read as the next day. A running session has no end to edit.
  */
 export function SessionEditor({ session, activities, onDone }: SessionEditorProps) {
   const id = useId()
-  const initial = session ?? { ...defaultTimes(), activityId: '', note: '' }
+  const initial = session ?? { ...defaultTimes(), activityId: '', note: '', tags: [] }
   const running = session?.end === null
 
   const selectable = activities.filter((a) => !a.archived || a.id === session?.activityId)
@@ -40,6 +42,8 @@ export function SessionEditor({ session, activities, onDone }: SessionEditorProp
   const [startTime, setStartTime] = useState(toTimeInput(initial.start))
   const [endTime, setEndTime] = useState(initial.end === null ? '' : toTimeInput(initial.end))
   const [note, setNote] = useState(initial.note)
+  const [tags, setTags] = useState(initial.tags)
+  const suggestions = useLiveQuery(listTags, [])
   const [error, setError] = useState<string>()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
 
@@ -59,12 +63,12 @@ export function SessionEditor({ session, activities, onDone }: SessionEditorProp
       if (running) {
         const start = fromDateTimeInputs(date, startTime)
         if (start > Date.now()) throw new Error("A running session can't start in the future.")
-        await updateSession(session!.id, { activityId, start, note })
+        await updateSession(session!.id, { activityId, start, note, tags })
       } else {
         const { start, end } = sessionTimesFromInputs(date, startTime, endTime)
         if (end > Date.now()) throw new Error("A session can't end in the future.")
-        if (session) await updateSession(session.id, { activityId, start, end, note })
-        else await addSession({ activityId, start, end, note })
+        if (session) await updateSession(session.id, { activityId, start, end, note, tags })
+        else await addSession({ activityId, start, end, note, tags })
       }
       onDone()
     } catch (e) {
@@ -159,6 +163,15 @@ export function SessionEditor({ session, activities, onDone }: SessionEditorProp
             onChange={(event) => setNote(event.target.value)}
           />
         </label>
+        <div className="field-wide">
+          <TagInput
+            label="Tags"
+            value={tags}
+            suggestions={suggestions}
+            placeholder="Optional"
+            onChange={setTags}
+          />
+        </div>
       </div>
 
       {error && (

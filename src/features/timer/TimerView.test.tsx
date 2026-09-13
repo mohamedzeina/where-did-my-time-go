@@ -21,6 +21,20 @@ beforeEach(async () => {
 })
 
 describe('TimerView', () => {
+  it('saves a note and tags on the running session as they are typed', async () => {
+    await startSession(gym.id, Date.now() - 60_000)
+    const user = userEvent.setup()
+    render(<TimerView />)
+
+    await user.type(await screen.findByRole('textbox', { name: 'Note' }), 'Squats')
+    await user.type(screen.getByRole('textbox', { name: 'Tags' }), 'Legs pr ')
+    expect(screen.getByRole('button', { name: 'Remove tag pr' })).toBeInTheDocument()
+
+    await waitFor(async () =>
+      expect(await getRunningSession()).toMatchObject({ note: 'Squats', tags: ['legs', 'pr'] }),
+    )
+  })
+
   it('starts timing the activity whose tile is pressed', async () => {
     const user = userEvent.setup()
     render(<TimerView />)
