@@ -86,6 +86,21 @@ describe('parseBackup', () => {
     expect(parseBackup({ ...valid(), sessions: [untagged] }).sessions[0].tags).toEqual([])
   })
 
+  it('keeps a limit, and reads goals from before limits as targets', () => {
+    const activity = valid().activities[0]
+    const parsed = parseBackup({
+      ...valid(),
+      activities: [
+        { ...activity, goal: { kind: 'limit', period: 'day', ms: 60_000 } },
+        { ...activity, id: 'b', name: 'Run', goal: { period: 'week', ms: 60_000 } },
+      ],
+    })
+    expect(parsed.activities.map((a) => a.goal)).toEqual([
+      { kind: 'limit', period: 'day', ms: 60_000 },
+      { period: 'week', ms: 60_000 },
+    ])
+  })
+
   it.each([
     ['something else entirely', [1, 2, 3], /isn't a where-did-my-time-go backup/],
     ['a newer version', { ...valid(), version: BACKUP_VERSION + 1 }, /newer version/],
@@ -95,6 +110,14 @@ describe('parseBackup', () => {
       {
         ...valid(),
         activities: [{ ...valid().activities[0], goal: { period: 'day', ms: 90_000_000 } }],
+      },
+      /goal on activity 1 .* damaged/,
+    ],
+    [
+      'a goal that is neither a target nor a limit',
+      {
+        ...valid(),
+        activities: [{ ...valid().activities[0], goal: { kind: 'most', period: 'day', ms: 1000 } }],
       },
       /goal on activity 1 .* damaged/,
     ],

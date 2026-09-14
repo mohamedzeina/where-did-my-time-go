@@ -12,8 +12,10 @@ export interface Activity {
   goal?: Goal
 }
 
-/** A time target per calendar day, or per week starting Monday. */
+/** A time rule per calendar day, or per week starting Monday: at least, or at most. */
 export interface Goal {
+  /** `limit` means at most. Left out it's a target, at least, like every goal before limits. */
+  kind?: 'target' | 'limit'
   period: 'day' | 'week'
   /** Target in milliseconds, more than 0 and no more than the period's length. */
   ms: number

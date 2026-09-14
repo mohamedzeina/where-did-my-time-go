@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { Activity, Goal, Session } from '../db/types'
-import { formatAmount, formatGoal, goalPeriod, goalProgress, goalRecord } from './goals'
+import {
+  formatAmount,
+  formatGoal,
+  goalPeriod,
+  goalProgress,
+  goalRecord,
+  nextLimitCheck,
+} from './goals'
 
 const HOUR = 3_600_000
 // 2026-09-11 is a Friday; its week starts Monday the 7th.
@@ -50,6 +57,8 @@ describe('goalProgress', () => {
       target: 4 * HOUR,
       fraction: 0.5,
       met: false,
+      limit: false,
+      over: false,
     })
     expect(goalProgress(withGoal({ period: 'week', ms: 4 * HOUR }), sessions, now)).toMatchObject({
       done: 5 * HOUR,
@@ -104,5 +113,46 @@ describe('goalRecord', () => {
 
     expect(record.periods).toEqual([{ start: at(7), done: 3 * HOUR, met: true, current: true }])
     expect(record).toMatchObject({ metCount: 1, countable: 1 })
+  })
+})
+
+describe('limits', () => {
+  const limit = (period: Goal['period'], ms: number) => withGoal({ kind: 'limit', period, ms })
+
+  it('reads as at most, and is only over past the amount', () => {
+    expect(formatGoal({ kind: 'limit', period: 'day', ms: 2 * HOUR })).toBe('at most 2h a day')
+    const sessions = [session('work', at(11, 9), at(11, 11))]
+    expect(goalProgress(limit('day', 2 * HOUR), sessions, at(11, 12))).toMatchObject({
+      met: true,
+      limit: true,
+      over: false,
+    })
+    expect(goalProgress(limit('day', HOUR), sessions, at(11, 12))).toMatchObject({ over: true })
+  })
+
+  it('keeps days within the limit, counting today only once it is broken', () => {
+    const sessions = [
+      session('work', at(8, 9), at(8, 12)), // 3h
+      session('work', at(11, 9), at(11, 10)), // today, 1h so far
+    ]
+
+    const kept = goalRecord(limit('day', 2 * HOUR), sessions, at(8), at(12), at(11, 12))
+    expect(kept.periods.map((p) => [p.met, p.current])).toEqual([
+      [false, false],
+      [true, false],
+      [true, false],
+      [true, true],
+    ])
+    expect(kept).toMatchObject({ metCount: 2, countable: 3 })
+
+    const broken = goalRecord(limit('day', 30 * 60_000), sessions, at(8), at(12), at(11, 12))
+    expect(broken).toMatchObject({ metCount: 2, countable: 4 })
+  })
+
+  it('checks again when the limit would be reached, or when the day starts over', () => {
+    const goal: Goal = { kind: 'limit', period: 'day', ms: 2 * HOUR }
+    expect(nextLimitCheck(goal, HOUR, at(11, 12))).toBe(at(11, 13))
+    expect(nextLimitCheck(goal, 3 * HOUR, at(11, 12))).toBe(at(12))
+    expect(nextLimitCheck(goal, HOUR, at(11, 23, 30))).toBe(at(12))
   })
 })

@@ -14,13 +14,31 @@ export type ActivityChanges = Partial<Pick<Activity, 'name' | 'color' | 'archive
 
 const PERIOD_MS = { day: 24 * 3_600_000, week: 7 * 24 * 3_600_000 }
 
+/** Goals are kept to whole minutes, the finest a goal label ever shows. */
+export const GOAL_STEP_MS = 60_000
+
 /** Throws if a goal is impossible: nothing, or more time than its period has. */
 export function assertValidGoal(goal: Goal): void {
+  if (goal.kind !== undefined && goal.kind !== 'target' && goal.kind !== 'limit') {
+    throw new Error('Pick a goal or a limit.')
+  }
   if (goal.period !== 'day' && goal.period !== 'week') throw new Error('Pick a day or a week.')
   if (!(goal.ms > 0)) throw new Error('Set a goal above zero, or clear it.')
   if (goal.ms > PERIOD_MS[goal.period]) {
     throw new Error(`A ${goal.period} only has ${goal.period === 'day' ? 24 : 168} hours.`)
   }
+}
+
+/**
+ * A goal as it's stored, once checked: whole minutes, at least one, and only a limit spells
+ * out its kind. Hours typed with decimals would otherwise leave seconds a label can't show
+ * (1.33h is 1h 19m 48s, shown as 1h 20m) and a percentage that never agrees with it.
+ */
+export function cleanGoal(goal: Goal): Goal {
+  assertValidGoal(goal)
+  const { period } = goal
+  const ms = Math.max(GOAL_STEP_MS, Math.round(goal.ms / GOAL_STEP_MS) * GOAL_STEP_MS)
+  return goal.kind === 'limit' ? { kind: 'limit', period, ms } : { period, ms }
 }
 
 async function cleanName(name: string, exceptId?: string): Promise<string> {
@@ -71,7 +89,7 @@ export async function updateActivity(id: string, changes: ActivityChanges): Prom
 
     const { goal, ...rest } = changes
     const updated: Activity = { ...existing, ...rest }
-    if (goal) updated.goal = { period: goal.period, ms: goal.ms }
+    if (goal) updated.goal = cleanGoal(goal)
     if (goal === null) delete updated.goal
     if (changes.name !== undefined) updated.name = await cleanName(changes.name, id)
     await db.activities.put(updated)

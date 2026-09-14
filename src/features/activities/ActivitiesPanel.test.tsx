@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createActivity, getActivity, listActivities, updateActivity } from '../../db/activities'
 import { db } from '../../db/db'
 import { addSession, countSessions } from '../../db/sessions'
@@ -10,6 +10,21 @@ import { ActivitiesPanel } from './ActivitiesPanel'
 beforeEach(async () => {
   await Promise.all(db.tables.map((table) => table.clear()))
 })
+
+afterEach(() => vi.unstubAllGlobals())
+
+/** jsdom has no Notification; stand one up with the given permission. */
+function stubNotifications(permission: NotificationPermission) {
+  class FakeNotification {
+    static permission = permission
+    static requestPermission = vi.fn(async () => {
+      FakeNotification.permission = 'granted'
+      return 'granted' as const
+    })
+  }
+  vi.stubGlobal('Notification', FakeNotification)
+  return FakeNotification
+}
 
 describe('ActivitiesPanel', () => {
   it('lists active activities and hides archived ones', async () => {
@@ -148,6 +163,96 @@ describe('ActivitiesPanel', () => {
     expect(
       await screen.findByRole('button', { name: 'Start Gym, 1m of 2h this week' }),
     ).toBeInTheDocument()
+  })
+
+  it('sets a limit in edit mode and shows the overrun on the tile', async () => {
+    const gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
+    const midnight = new Date()
+    midnight.setHours(0, 0, 0, 0)
+    // Two minutes, right after midnight, so the test holds at any time of day.
+    await addSession({
+      activityId: gym.id,
+      start: midnight.getTime(),
+      end: midnight.getTime() + 2 * 60_000,
+    })
+    const user = userEvent.setup()
+    render(<ActivitiesPanel running={null} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.type(screen.getByRole('textbox', { name: 'Goal hours for Gym' }), '1{Enter}')
+    const kind = screen.getByRole('group', { name: 'Goal or limit for Gym' })
+    await user.click(within(kind).getByRole('radio', { name: 'max' }))
+    await waitFor(async () =>
+      expect((await getActivity(gym.id))?.goal).toEqual({
+        kind: 'limit',
+        period: 'day',
+        ms: 3_600_000,
+      }),
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(
+      await screen.findByRole('button', { name: 'Start Gym, 2m of 1h limit today' }),
+    ).toBeInTheDocument()
+
+    await updateActivity(gym.id, { goal: { kind: 'limit', period: 'day', ms: 60_000 } })
+    const tile = await screen.findByRole('button', {
+      name: 'Start Gym, over limit: 2m of 1m limit today',
+    })
+    expect(tile).toHaveTextContent('+1m')
+  })
+
+  it('rounds the meter and the percentage down together', async () => {
+    const gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex }, 1)
+    const run = await createActivity({ name: 'Run', color: ACTIVITY_COLORS[1].hex }, 2)
+    const goal = { kind: 'limit', period: 'day', ms: 2 * 3_600_000 } as const
+    await updateActivity(gym.id, { goal })
+    await updateActivity(run.id, { goal })
+    const midnight = new Date()
+    midnight.setHours(0, 0, 0, 0)
+    const at = midnight.getTime()
+    // A few seconds lights nothing; exactly a twelfth of the limit lights exactly one segment.
+    await addSession({ activityId: gym.id, start: at, end: at + 22_000 })
+    await addSession({ activityId: run.id, start: at, end: at + 10 * 60_000 })
+    render(<ActivitiesPanel running={null} />)
+
+    const gymTile = await screen.findByRole('button', { name: /^Start Gym, 22s of 2h limit/ })
+    expect(gymTile).toHaveTextContent('0%')
+    expect(gymTile.style.getPropertyValue('--fill')).toBe('0')
+
+    const runTile = screen.getByRole('button', { name: /^Start Run, 10m of 2h limit/ })
+    expect(runTile).toHaveTextContent('8%')
+    expect(Number(runTile.style.getPropertyValue('--fill'))).toBeCloseTo(1 / 12)
+  })
+
+  it('offers to allow desktop alerts for a limit, and stops once they are', async () => {
+    const notifications = stubNotifications('default')
+    const gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
+    await updateActivity(gym.id, { goal: { kind: 'limit', period: 'day', ms: 3_600_000 } })
+    const user = userEvent.setup()
+    render(<ActivitiesPanel running={null} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.click(screen.getByRole('button', { name: 'Allow desktop alerts' }))
+
+    expect(notifications.requestPermission).toHaveBeenCalled()
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Allow desktop alerts' }),
+      ).not.toBeInTheDocument(),
+    )
+  })
+
+  it('says when desktop alerts for a limit are blocked', async () => {
+    stubNotifications('denied')
+    const gym = await createActivity({ name: 'Gym', color: ACTIVITY_COLORS[0].hex })
+    await updateActivity(gym.id, { goal: { kind: 'limit', period: 'day', ms: 3_600_000 } })
+    const user = userEvent.setup()
+    render(<ActivitiesPanel running={null} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+
+    expect(screen.getByText(/Desktop alerts are blocked/)).toBeInTheDocument()
   })
 
   it('clears a goal when the hours are emptied', async () => {

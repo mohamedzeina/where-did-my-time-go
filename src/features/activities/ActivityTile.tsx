@@ -19,19 +19,26 @@ const SEGMENTS = 12
 
 /**
  * A compact tile: press it to start timing the activity, press again to stop. With a goal it
- * also carries a segmented meter and the time done against the target.
+ * also carries a segmented meter and the time done against the target. A limit's meter turns
+ * to a warning once it's passed, with the overrun where the percentage was.
  */
 export function ActivityTile({ activity, stats, runningSince }: ActivityTileProps) {
   const running = runningSince !== undefined
   const progress = stats?.progress
+  const limit = progress?.limit ?? false
   const period = activity.goal?.period === 'week' ? 'week' : 'day'
   const spoken =
     progress &&
-    `${formatHoursMinutes(progress.done)} of ${formatAmount(progress.target)} ${
-      period === 'week' ? 'this week' : 'today'
-    }`
-  // Round the fill up to whole segments so a lit segment always means real progress.
-  const lit = progress ? Math.ceil(progress.fraction * SEGMENTS) / SEGMENTS : 0
+    `${formatHoursMinutes(progress.done)} of ${formatAmount(progress.target)}${
+      limit ? ' limit' : ''
+    } ${period === 'week' ? 'this week' : 'today'}`
+  const state = progress?.over ? 'is-over' : progress?.met && !limit ? 'is-met' : ''
+  // Meter and percentage both round down, so they never disagree: a segment lights only once
+  // its full twelfth is done, and 100% only shows once the amount is actually reached. Whole
+  // milliseconds keep the boundaries exact (10m of 2h is one segment, not 0.999… of one).
+  const share = (parts: number) =>
+    progress ? Math.min(parts, Math.floor((progress.done * parts) / progress.target)) : 0
+  const lit = share(SEGMENTS) / SEGMENTS
 
   return (
     <button
@@ -46,7 +53,9 @@ export function ActivityTile({ activity, stats, runningSince }: ActivityTileProp
       }
       aria-pressed={running}
       aria-label={`${running ? 'Stop' : 'Start'} ${activity.name}${
-        progress ? `, ${progress.met ? 'goal met: ' : ''}${spoken}` : ''
+        progress
+          ? `, ${state === 'is-over' ? 'over limit: ' : state === 'is-met' ? 'goal met: ' : ''}${spoken}`
+          : ''
       }`}
       onClick={() => void (running ? stopTimer() : startSession(activity.id))}
     >
@@ -61,16 +70,22 @@ export function ActivityTile({ activity, stats, runningSince }: ActivityTileProp
 
       {progress && (
         <>
-          <span className={progress.met ? 'tile-meter is-met' : 'tile-meter'} aria-hidden="true" />
+          <span className={`tile-meter ${state}`} aria-hidden="true" />
           <span className="tile-progress" aria-hidden="true">
             <span>
               <span className="tile-done">{formatHoursMinutes(progress.done)}</span>
               <span className="tile-target">
-                /{formatAmount(progress.target)} {period === 'week' ? 'wk' : 'day'}
+                {limit ? ' ≤' : '/'}
+                {formatAmount(progress.target)} {period === 'week' ? 'wk' : 'day'}
               </span>
             </span>
-            <span className={progress.met ? 'tile-pct is-met' : 'tile-pct'}>
-              {progress.met ? '✓' : `${Math.round(progress.fraction * 100)}%`}
+            <span className={`tile-pct ${state}`}>
+              {state === 'is-over'
+                ? // Just past the limit reads +1s rather than +<1s.
+                  `+${formatHoursMinutes(Math.max(1000, progress.done - progress.target))}`
+                : state === 'is-met'
+                  ? '✓'
+                  : `${share(100)}%`}
             </span>
           </span>
         </>

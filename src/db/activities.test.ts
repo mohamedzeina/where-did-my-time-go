@@ -100,6 +100,30 @@ describe('goals', () => {
     expect(await getActivity(gym.id)).not.toHaveProperty('goal')
   })
 
+  it('keeps goals to whole minutes, and at least one', async () => {
+    const gym = await createActivity({ name: 'Gym', color: '#111' })
+
+    await updateActivity(gym.id, { goal: { period: 'day', ms: 1.33 * 3_600_000 } })
+    expect((await getActivity(gym.id))?.goal).toEqual({ period: 'day', ms: 80 * 60_000 })
+
+    await updateActivity(gym.id, { goal: { kind: 'limit', period: 'day', ms: 20_000 } })
+    expect((await getActivity(gym.id))?.goal).toEqual({ kind: 'limit', period: 'day', ms: 60_000 })
+  })
+
+  it('stores a limit with its kind, and a target without one', async () => {
+    const gym = await createActivity({ name: 'Gym', color: '#111' })
+
+    await updateActivity(gym.id, { goal: { kind: 'limit', period: 'day', ms: 3_600_000 } })
+    expect((await getActivity(gym.id))?.goal).toEqual({
+      kind: 'limit',
+      period: 'day',
+      ms: 3_600_000,
+    })
+
+    await updateActivity(gym.id, { goal: { kind: 'target', period: 'day', ms: 3_600_000 } })
+    expect((await getActivity(gym.id))?.goal).toEqual({ period: 'day', ms: 3_600_000 })
+  })
+
   it.each([
     [{ period: 'day', ms: 0 }, /above zero/],
     [{ period: 'day', ms: 25 * 3_600_000 }, /only has 24 hours/],

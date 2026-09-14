@@ -93,6 +93,19 @@ describe('InsightsView', () => {
     expect(row.querySelectorAll('.goal-dot.is-met')).toHaveLength(1)
   })
 
+  it('shows how often each limit was kept', async () => {
+    await updateActivity(reading.id, { goal: { kind: 'limit', period: 'day', ms: 2 * HOUR } })
+    render(<InsightsView />)
+
+    const goals = await screen.findByRole('region', { name: 'Goals' })
+    const row = within(goals).getByRole('listitem')
+    expect(row).toHaveTextContent('at most 2h a day')
+    // Yesterday's 3h breaks it; the five days before keep it; today can still go either way.
+    expect(row).toHaveTextContent('kept 5 of 6 days so far')
+    expect(row.querySelectorAll('.goal-dot.is-over')).toHaveLength(1)
+    expect(row.querySelectorAll('.goal-dot.is-current')).toHaveLength(1)
+  })
+
   it('leaves the goals section out when no activity has a goal', async () => {
     render(<InsightsView />)
     await screen.findByText('Tracked')

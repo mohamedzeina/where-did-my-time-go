@@ -141,6 +141,15 @@
   filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tile-color) 60%, transparent));
 }
 
+/* Past a limit: the meter and the overrun beside it turn to the warning color. */
+.tile-meter.is-over {
+  --tile-color: var(--danger);
+}
+
+.tile-pct.is-over {
+  color: var(--danger);
+}
+
 /*
  * Edit mode is a console: one row per activity, columns lined up across rows and labelled
  * once at the top, rather than five little forms side by side.
@@ -148,7 +157,7 @@
 .editor-list {
   /* Shared widths so the header labels sit over their columns. */
   --col-color: 14rem;
-  --col-goal: 11.5rem;
+  --col-goal: 17rem;
   --col-action: 5.5rem;
   display: grid;
   gap: var(--space-3);
@@ -223,13 +232,27 @@
   background: var(--bg);
 }
 
+/* A note under a row, e.g. that a limit can't reach the desktop, with an action beside it. */
+.editor-hint {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+
 .editor-error {
   grid-column: 1 / -1;
   font-size: var(--step--1);
   color: var(--danger);
 }
 
-/* Goal: a small mono amount box and a day | week toggle, in the same chip style as the rest. */
+/*
+ * Goal: min | max, a small mono amount box and a day | week toggle, in the same chip style as
+ * the rest.
+ */
 .goal-field {
   display: flex;
   flex-wrap: wrap;

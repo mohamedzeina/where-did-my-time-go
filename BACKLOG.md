@@ -141,9 +141,18 @@ Only one session runs at a time. Starting another activity stops the current one
       _Done when:_ tagging a running session and searching `#that-tag` in History finds it,
       with its time in the total.
 
+- [x] **17. Limits**
+      A goal can point either way: _at least_ (as before) or _at most_, e.g. Meetings at most
+      2h a day. One rule per activity. The tile meter fills toward a limit and turns to a
+      warning once it's crossed, showing how far over. Crossing a limit while the timer runs
+      says so the way reminders do: the in-app notice when you're looking, a desktop
+      notification when you aren't. Insights counts periods kept under the limit, where a day
+      with no time on it counts as kept. Existing goals and older backups read as _at least_.
+      _Done when:_ a running timer that crosses its activity's limit says so, and the tile
+      shows it's over.
+
 ## Later / ideas
 
-- Limits as well as targets (e.g. Meetings at most 2h/day)
 - Pomodoro mode
 
 ## Done log
@@ -229,3 +238,14 @@ Only one session runs at a time. Starting another activity stops the current one
   Clicking a tag searches it; an empty search in a short range offers all time. Trimming away
   time carries the note and tags onto the resumed session. CSV gained a trailing `tags`
   column. Suggestions use the native datalist. Today rows don't show notes or tags yet.
+- 2026-09-14 — Step 17, limits. A goal gains an optional `kind`, and only a limit spells it
+  out, so existing goals and older backups read as targets with no migration of their shape.
+  Goals are now kept to whole minutes (typed decimals like 1.33h left seconds a label couldn't
+  show); a database upgrade rounds any saved before. The tile meter and percentage both round
+  down so they never disagree, and a limit's tile turns red with the overrun once it's past.
+  `useLimitWatch` runs app-wide and sleeps until the moment the limit would be reached rather
+  than ticking; it only speaks for a crossing it saw happen, so a limit already over on load
+  stays quiet. Delivery shares the reminder's focus check, on its own notification tag so the
+  two don't replace each other. Picking max asks for the notification permission, and the
+  editor says when desktop alerts are blocked. In Insights a limit counts as kept, and today
+  only counts once it's broken.

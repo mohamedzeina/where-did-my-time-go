@@ -41,3 +41,39 @@ it('gives sessions from before tags an empty list of them', async () => {
     { id: 's', activityId: 'a', start: 1, end: 2, note: 'Legs', tags: [] },
   ])
 })
+
+it('rounds goals saved with seconds left over to whole minutes', async () => {
+  const old = new Dexie('goal-upgrade-test')
+  old.version(2).stores({
+    activities: 'id, createdAt',
+    sessions: 'id, activityId, start, running, *tags',
+  })
+  await old.table('activities').bulkAdd([
+    {
+      id: 'a',
+      name: 'A',
+      color: '#111',
+      archived: false,
+      createdAt: 1,
+      goal: { period: 'day', ms: 4_788_000 },
+    },
+    {
+      id: 'b',
+      name: 'B',
+      color: '#222',
+      archived: false,
+      createdAt: 2,
+      goal: { kind: 'limit', period: 'day', ms: 12_000 },
+    },
+    { id: 'c', name: 'C', color: '#333', archived: false, createdAt: 3 },
+  ])
+  old.close()
+
+  fresh = new TimeDatabase('goal-upgrade-test')
+  const goals = (await fresh.activities.orderBy('createdAt').toArray()).map((a) => a.goal)
+  expect(goals).toEqual([
+    { period: 'day', ms: 80 * 60_000 },
+    { kind: 'limit', period: 'day', ms: 60_000 },
+    undefined,
+  ])
+})

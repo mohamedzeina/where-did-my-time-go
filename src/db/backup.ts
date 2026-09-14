@@ -1,5 +1,5 @@
 import { normalizeTags } from '../lib/tags'
-import { assertValidGoal } from './activities'
+import { cleanGoal } from './activities'
 import { db, type SessionRow } from './db'
 import type { Activity, Goal, Session } from './types'
 
@@ -73,9 +73,7 @@ export function parseBackup(value: unknown): Backup {
       const goal = a.goal
       try {
         if (!isObject(goal)) throw new Error()
-        const parsed = { period: goal.period, ms: goal.ms } as Goal
-        assertValidGoal(parsed)
-        activity.goal = parsed
+        activity.goal = cleanGoal({ kind: goal.kind, period: goal.period, ms: goal.ms } as Goal)
       } catch {
         throw new Error(`The goal on activity ${i + 1} in this backup is damaged.`)
       }

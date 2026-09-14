@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { Activity, Goal, Session } from '../../db/types'
-import { formatGoal, goalRecord } from '../../lib/goals'
+import { formatGoal, goalRecord, isLimit } from '../../lib/goals'
 import { formatHoursMinutes } from '../../lib/totals'
 
 interface GoalsSectionProps {
@@ -25,7 +25,8 @@ const hasGoal = (a: Activity): a is Activity & { goal: Goal } => a.goal !== unde
 
 /**
  * How each goal went in the range: met on how many days (or weeks), with a dot for each one
- * (filled when met). Today and this week only count once they're met.
+ * (filled when met). A limit is met by staying within it, and a broken one gets a warning
+ * outline. Today and this week only count once they're settled.
  */
 export function GoalsSection({ activities, sessions, from, to, now }: GoalsSectionProps) {
   const goals = [...activities.values()].filter((a) => hasGoal(a) && !a.archived) as (Activity & {
@@ -44,6 +45,7 @@ export function GoalsSection({ activities, sessions, from, to, now }: GoalsSecti
         {goals.map((activity) => {
           const record = goalRecord(activity, sessions, from, to, now)
           const unit = activity.goal.period === 'day' ? 'day' : 'week'
+          const limit = isLimit(activity.goal)
           return (
             <li
               key={activity.id}
@@ -55,9 +57,9 @@ export function GoalsSection({ activities, sessions, from, to, now }: GoalsSecti
                 {activity.name}
               </span>
               <span className="goal-target">{formatGoal(activity.goal)}</span>
-              {/* The current day or week only counts once met, so say "so far". */}
+              {/* The current day or week only counts once settled, so say "so far". */}
               <span className="goal-score">
-                met {record.metCount} of {record.countable} {unit}
+                {limit ? 'kept' : 'met'} {record.metCount} of {record.countable} {unit}
                 {record.countable === 1 ? '' : 's'} so far
               </span>
               {record.periods.length <= MAX_DOTS && (
@@ -66,7 +68,13 @@ export function GoalsSection({ activities, sessions, from, to, now }: GoalsSecti
                     <span
                       key={p.start}
                       className={
-                        p.met ? 'goal-dot is-met' : p.current ? 'goal-dot is-current' : 'goal-dot'
+                        p.current && p.met === limit
+                          ? 'goal-dot is-current'
+                          : p.met
+                            ? 'goal-dot is-met'
+                            : limit
+                              ? 'goal-dot is-over'
+                              : 'goal-dot'
                       }
                       title={`${unit === 'week' ? 'Week of ' : ''}${dayName.format(p.start)}: ${formatHoursMinutes(p.done)}${
                         p.current ? ' (still going)' : ''

@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { announce } from '../../app/notice'
 import { listSessions } from '../../db/sessions'
 import type { Activity, Goal } from '../../db/types'
-import { goalPeriod, goalProgress, type GoalProgress } from '../../lib/goals'
+import { goalPeriod, goalProgress, isLimit, type GoalProgress } from '../../lib/goals'
 import { bucketize, startOfWeek } from '../../lib/insights'
 import { addDays, endOfDay, startOfDay } from '../../lib/totals'
 import { useTicker } from '../../lib/useTicker'
@@ -23,7 +23,8 @@ const hasGoal = (a: Activity): a is Activity & { goal: Goal } => a.goal !== unde
 /**
  * Per-activity numbers for the timer list: the last seven days, today's total, and progress
  * toward a goal. One query covers all three, and it ticks in step with the running timer.
- * Reaching a goal while you watch says so once; goals already met on load stay quiet.
+ * Reaching a goal while you watch says so once; goals already met on load stay quiet. Limits
+ * aren't announced here: `useLimitWatch` does that from anywhere in the app.
  */
 export function useActivityStats(
   activities: Activity[],
@@ -50,18 +51,21 @@ export function useActivityStats(
   }
 
   // One key per activity, goal and period, so a new day or a changed goal starts fresh.
-  const keyed = activities.filter(hasGoal).flatMap((activity) => {
-    const progress = stats.get(activity.id)?.progress
-    return progress
-      ? [
-          {
-            activity,
-            key: `${activity.id}:${activity.goal.period}:${activity.goal.ms}:${goalPeriod(activity.goal, now).from}`,
-            met: progress.met,
-          },
-        ]
-      : []
-  })
+  const keyed = activities
+    .filter(hasGoal)
+    .filter((activity) => !isLimit(activity.goal))
+    .flatMap((activity) => {
+      const progress = stats.get(activity.id)?.progress
+      return progress
+        ? [
+            {
+              activity,
+              key: `${activity.id}:${activity.goal.period}:${activity.goal.ms}:${goalPeriod(activity.goal, now).from}`,
+              met: progress.met,
+            },
+          ]
+        : []
+    })
   const signature = keyed.map((k) => `${k.key}=${k.met}`).join('|')
 
   const seen = useRef<Map<string, boolean>>(null)

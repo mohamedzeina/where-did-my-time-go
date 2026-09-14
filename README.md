@@ -19,8 +19,12 @@ See [BACKLOG.md](BACKLOG.md) for how it was built, step by step, and the design 
   a session on its own, so ignoring the question keeps the time as tracked.
 - **Reminders:** a running timer can say how long it has been going, every hour or few. It
   only interrupts the desktop when the app isn't the window you're looking at.
-- **Goals:** give any activity a daily or weekly time goal. Its tile fills up toward it as
-  you go, and Insights shows how often you've met it.
+- **Goals and limits:** give any activity a daily or weekly amount, either at least (a goal)
+  or at most (a limit, say Meetings at most 2h a day). Its tile fills up toward it as you go,
+  and a limit's tile turns red and shows the overrun once you're past it. A running timer
+  that crosses a limit says so the way reminders do: a line in the app when you're looking at
+  it, a desktop notification when you aren't. Insights shows how often each goal was met or
+  each limit kept.
 - **Today:** tracked time against the day so far, a total per activity, and today's sessions.
   The day ribbon down the left edge shows every session as a band at its time of day.
 - **History:** sessions grouped by day, filtered by date range and activity. Fix any session

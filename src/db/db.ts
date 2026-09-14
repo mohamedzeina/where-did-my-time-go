@@ -33,6 +33,18 @@ export class TimeDatabase extends Dexie {
             row.tags ??= []
           }),
       )
+    // Goals became whole minutes (see `cleanGoal`); round any saved with seconds left over.
+    this.version(3)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table<Activity, string>('activities')
+          .toCollection()
+          .modify((activity) => {
+            if (!activity.goal) return
+            activity.goal.ms = Math.max(60_000, Math.round(activity.goal.ms / 60_000) * 60_000)
+          }),
+      )
 
     // Runs only when the database is created, so archiving or renaming the starters sticks.
     this.on('populate', (tx) => {
